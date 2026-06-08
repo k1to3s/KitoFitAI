@@ -3,8 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<!-- iOS PWA -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="KitoFit">
+<meta name="theme-color" content="#080909">
+<meta name="mobile-web-app-capable" content="yes">
+<!-- iOS splash/icon -->
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' fill='%23080909'/><text x='50%25' y='62%25' font-size='260' font-family='Impact' fill='%23b8f53a' text-anchor='middle'>K</text></svg>">
 <title>KitoFit</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,300&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
@@ -51,6 +57,8 @@ select.fi option{background:#161719}
 .emsg.show{display:block}
 .smsg{background:var(--green-bg);border:1px solid rgba(58,245,135,.2);border-radius:var(--rsm);padding:9px 12px;font-size:12px;color:var(--green);margin-bottom:11px;display:none}
 .smsg.show{display:block}
+.txt-link{font-size:11px;color:var(--t2);text-decoration:underline;cursor:pointer;font-family:var(--fm);letter-spacing:.04em;background:none;border:none;padding:0;margin-top:8px;display:block;text-align:center}
+.txt-link:hover{color:var(--lime)}
 
 /* ─── ONBOARD ─── */
 #s-onboard{padding:calc(var(--safe-top)+14px) 20px calc(var(--safe-bot)+20px);overflow-y:auto;background:var(--bg)}
@@ -232,14 +240,6 @@ input[type=time]{background:var(--bg3);border:1px solid var(--border2);border-ra
 .pr-u{font-size:10px;color:var(--t2);font-family:var(--fm)}
 .pr-d{font-size:9px;color:var(--t3);font-family:var(--fm);margin-top:2px}
 
-/* ─── WATER TRACKER ─── */
-.water-wrap{display:flex;align-items:center;gap:12px;margin-bottom:14px}
-.water-glasses{display:flex;gap:6px;flex:1;flex-wrap:wrap}
-.water-glass{width:28px;height:34px;border-radius:3px 3px 6px 6px;border:1.5px solid var(--border2);background:var(--bg3);cursor:pointer;transition:all .2s;position:relative;overflow:hidden}
-.water-glass.filled{border-color:var(--blue);background:rgba(58,155,245,0.25)}
-.water-glass.filled::after{content:'';position:absolute;bottom:0;left:0;right:0;height:70%;background:rgba(58,155,245,0.5)}
-.water-lbl{font-family:var(--fm);font-size:11px;color:var(--t2);white-space:nowrap}
-
 /* ─── CAMERA / SCAN ─── */
 #cam-overlay{position:fixed;inset:0;z-index:300;background:#000;display:flex;flex-direction:column}
 .cam-topbar{padding:calc(var(--safe-top)+10px) 18px 14px;display:flex;align-items:center;justify-content:space-between;background:rgba(0,0,0,.75)}
@@ -333,6 +333,10 @@ input[type=time]{background:var(--bg3);border:1px solid var(--border2);border-ra
 
 /* ─── DIVIDER ─── */
 .dvd{height:1px;background:var(--border);margin:16px 0}
+
+/* ─── LOADING SPINNER ─── */
+.spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(184,245,58,0.3);border-top-color:var(--lime);border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle;margin-right:6px}
+@keyframes spin{to{transform:rotate(360deg)}}
 </style>
 </head>
 <body>
@@ -350,7 +354,8 @@ input[type=time]{background:var(--bg3);border:1px solid var(--border2);border-ra
       <div class="emsg" id="le"></div>
       <div class="fl"><label class="fl-l" for="l-em">Email</label><input type="email" class="fi" id="l-em" placeholder="you@email.com" autocomplete="email" autocapitalize="none"></div>
       <div class="fl"><label class="fl-l" for="l-pw">Password</label><input type="password" class="fi" id="l-pw" placeholder="Password" autocomplete="current-password"></div>
-      <button class="pb" onclick="doLogin()">Sign In</button>
+      <button class="pb" id="login-btn" onclick="doLogin()">Sign In</button>
+      <button class="txt-link" onclick="showForgotPw()">Forgot password?</button>
     </div>
     <div id="f-signup" class="aform">
       <div class="emsg" id="se"></div>
@@ -358,8 +363,7 @@ input[type=time]{background:var(--bg3);border:1px solid var(--border2);border-ra
       <div class="fl"><label class="fl-l" for="su-n">Full Name</label><input type="text" class="fi" id="su-n" placeholder="Your name" autocomplete="name" autocapitalize="words"></div>
       <div class="fl"><label class="fl-l" for="su-em">Email</label><input type="email" class="fi" id="su-em" placeholder="you@email.com" autocomplete="email" autocapitalize="none"></div>
       <div class="fl"><label class="fl-l" for="su-pw">Password</label><input type="password" class="fi" id="su-pw" placeholder="Min 8 chars, 1 uppercase, 1 number" autocomplete="new-password"></div>
-      <div class="fl"><label class="fl-l" for="su-ph">Phone (optional)</label><input type="tel" class="fi" id="su-ph" placeholder="+1 (555) 000-0000" autocomplete="tel"></div>
-      <button class="pb" onclick="doSignup()">Create Account</button>
+      <button class="pb" id="signup-btn" onclick="doSignup()">Create Account</button>
     </div>
   </div>
 </div>
@@ -388,12 +392,12 @@ input[type=time]{background:var(--bg3);border:1px solid var(--border2);border-ra
   <div id="ob2" class="hidden">
     <div class="ob-hdr"><div class="ob-num">Step 2 of 4</div><div class="ob-title">BODY STATS</div><div class="ob-sub">Personalizes your AI coach recommendations and calorie targets.</div></div>
     <div class="prog"><div class="prog-fill" style="width:50%"></div></div>
-    <div class="fl"><label class="fl-l" for="ob-wt">Weight</label><div class="row"><input type="number" class="fi" id="ob-wt" placeholder="175" style="flex:2"><select class="fi" id="ob-wu" style="flex:1"><option value="lbs">lbs</option><option value="kg">kg</option></select></div></div>
-    <div class="fl"><label class="fl-l" for="ob-ht">Height</label><div class="row"><input type="number" class="fi" id="ob-ht" placeholder="178" style="flex:2"><select class="fi" id="ob-hu" style="flex:1"><option value="cm">cm</option><option value="ft">ft/in</option></select></div></div>
-    <div class="fl"><label class="fl-l" for="ob-age">Age</label><input type="number" class="fi" id="ob-age" placeholder="25"></div>
+    <div class="fl"><label class="fl-l" for="ob-wt">Weight</label><div class="row"><input type="number" class="fi" id="ob-wt" placeholder="175" style="flex:2" inputmode="decimal"><select class="fi" id="ob-wu" style="flex:1"><option value="lbs">lbs</option><option value="kg">kg</option></select></div></div>
+    <div class="fl"><label class="fl-l" for="ob-ht">Height</label><div class="row"><input type="number" class="fi" id="ob-ht" placeholder="178" style="flex:2" inputmode="decimal"><select class="fi" id="ob-hu" style="flex:1"><option value="cm">cm</option><option value="ft">ft/in</option></select></div></div>
+    <div class="fl"><label class="fl-l" for="ob-age">Age</label><input type="number" class="fi" id="ob-age" placeholder="25" inputmode="numeric"></div>
     <div class="fl"><label class="fl-l" for="ob-sex">Sex</label><select class="fi" id="ob-sex"><option value="male">Male</option><option value="female">Female</option><option value="other">Prefer not to say</option></select></div>
-    <div class="fl"><label class="fl-l" for="ob-gw">Goal Weight (optional)</label><input type="number" class="fi" id="ob-gw" placeholder="160"></div>
-    <div class="fl"><label class="fl-l" for="ob-cal">Daily Calorie Target (optional)</label><input type="number" class="fi" id="ob-cal" placeholder="2500"></div>
+    <div class="fl"><label class="fl-l" for="ob-gw">Goal Weight (optional)</label><input type="number" class="fi" id="ob-gw" placeholder="160" inputmode="decimal"></div>
+    <div class="fl"><label class="fl-l" for="ob-cal">Daily Calorie Target (optional)</label><input type="number" class="fi" id="ob-cal" placeholder="2500" inputmode="numeric"></div>
     <div class="row mt8"><button class="sb" onclick="obGo(1)">Back</button><button class="pb" onclick="obGo(3)">Continue</button></div>
   </div>
   <div id="ob3" class="hidden">
@@ -413,13 +417,13 @@ input[type=time]{background:var(--bg3);border:1px solid var(--border2);border-ra
     <div class="row mt8"><button class="sb" onclick="obGo(2)">Back</button><button class="pb" onclick="obGo(4)">Continue</button></div>
   </div>
   <div id="ob4" class="hidden">
-    <div class="ob-hdr"><div class="ob-num">Step 4 of 4</div><div class="ob-title">REMINDERS</div><div class="ob-sub">Browser notifications at your set times — even when the tab is in the background.</div></div>
+    <div class="ob-hdr"><div class="ob-num">Step 4 of 4</div><div class="ob-title">REMINDERS</div><div class="ob-sub">Browser notifications at your set times.</div></div>
     <div class="prog"><div class="prog-fill" style="width:100%"></div></div>
     <div class="nrow"><div class="nico">WRK</div><div class="ninfo"><div class="nlbl">Workout Reminder</div><div class="nhint">Daily at set time</div></div><button class="tog on" id="tog-w" onclick="tgN('w')" aria-label="Toggle workout reminder"></button></div>
     <div class="tr vis" id="tr-w"><span class="tl">Time:</span><input type="time" id="t-w" value="07:30"></div>
     <div class="nrow"><div class="nico">LOG</div><div class="ninfo"><div class="nlbl">Check-In Reminder</div><div class="nhint">Log your evening check-in</div></div><button class="tog on" id="tog-c" onclick="tgN('c')" aria-label="Toggle check-in reminder"></button></div>
     <div class="tr vis" id="tr-c"><span class="tl">Time:</span><input type="time" id="t-c" value="20:00"></div>
-    <div class="nb">Data stays on your device. Notifications require browser permission.</div>
+    <div class="nb">Notifications require browser permission when prompted.</div>
     <div id="n-status" style="font-size:11px;color:var(--t2);margin-bottom:10px;font-family:var(--fm)"></div>
     <button class="sb mb12" style="width:100%" onclick="reqNotif()" id="n-perm-btn">Enable Notifications</button>
     <div class="row"><button class="sb" onclick="obGo(3)">Back</button><button class="pb" onclick="finOB()">Start Training</button></div>
@@ -443,7 +447,7 @@ input[type=time]{background:var(--bg3);border:1px solid var(--border2);border-ra
     </div>
   </div>
   <div class="cam-controls">
-    <div class="cam-hint">Point at food — AI estimates calories and macros</div>
+    <div class="cam-hint">Point at food — AI estimates calories &amp; macros</div>
     <button class="cam-snap" onclick="snapFood()" aria-label="Take photo">SNAP</button>
   </div>
 </div>
@@ -491,12 +495,8 @@ input[type=time]{background:var(--bg3);border:1px solid var(--border2);border-ra
       <div class="streak-pip"></div>
       <span id="streak-txt">0-Day Streak</span>
     </div>
-
-    <!-- Weekly heatmap -->
     <div class="sec-l">This Week</div>
     <div class="heat-strip" id="heat-strip"></div>
-
-    <!-- Workout / Rest content -->
     <div id="today-content"></div>
 
     <!-- Daily Check-In -->
@@ -514,18 +514,6 @@ input[type=time]{background:var(--bg3);border:1px solid var(--border2);border-ra
         <div class="fl"><label class="fl-l" for="ci-notes">Notes</label>
         <textarea class="fi" id="ci-notes" style="resize:none;height:64px;line-height:1.5" placeholder="Soreness, sleep quality, energy levels..."></textarea></div>
         <button class="pb mt8" onclick="submitCI()">Log Check-In</button>
-      </div></div>
-    </div>
-
-    <!-- Water Tracker -->
-    <div class="mt8">
-      <div class="card"><div class="card-hdr"><div class="card-t">Water Intake</div><div class="card-b" id="water-badge">0/8</div></div>
-      <div class="card-body">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-          <div style="font-size:11px;color:var(--t2);font-family:var(--fm)">Tap to log a glass (250ml)</div>
-          <button class="sb" style="padding:5px 10px;font-size:10px" onclick="resetWater()">Reset</button>
-        </div>
-        <div class="water-glasses" id="water-glasses"></div>
       </div></div>
     </div>
   </div>
@@ -557,7 +545,6 @@ input[type=time]{background:var(--bg3);border:1px solid var(--border2);border-ra
     <div class="pg-title">NUTRITION</div>
     <div class="pg-sub">Macros, food log, weight and body tracking</div>
 
-    <!-- Calorie ring -->
     <div class="card">
       <div class="card-hdr"><div class="card-t">Today's Calories</div><div class="card-b" id="cal-pct-badge">0%</div></div>
       <div class="card-body">
@@ -597,7 +584,6 @@ input[type=time]{background:var(--bg3);border:1px solid var(--border2);border-ra
       </div>
     </div>
 
-    <!-- Log food buttons -->
     <div class="sec-l">Log Food</div>
     <div class="food-btns">
       <div class="food-btn" onclick="openCam()" role="button" aria-label="Photo scan food">
@@ -615,14 +601,12 @@ input[type=time]{background:var(--bg3);border:1px solid var(--border2);border-ra
     </div>
     <div class="log-list" id="food-log-list"></div>
 
-    <!-- Weight log -->
     <div class="dvd"></div>
     <div class="sec-l">Weight Tracking</div>
     <div class="metric-grid">
-      <div class="mc" onclick="openWeightModal()" role="button" aria-label="Log weight"><div class="mc-v" id="cur-wt">--</div><div class="mc-u" id="wt-unit-d">lbs</div><div class="mc-l">Current</div><div class="mc-ch" id="wt-ch"></div></div>
+      <div class="mc" onclick="openWeightModal()" role="button"><div class="mc-v" id="cur-wt">--</div><div class="mc-u" id="wt-unit-d">lbs</div><div class="mc-l">Current</div><div class="mc-ch" id="wt-ch"></div></div>
       <div class="mc" role="presentation"><div class="mc-v" id="goal-wt">--</div><div class="mc-u" id="gw-unit-d">lbs</div><div class="mc-l">Goal</div><div class="mc-ch" id="gw-diff"></div></div>
     </div>
-    <!-- Weight sparkline -->
     <div class="card" id="wt-chart-card" style="display:none">
       <div class="card-hdr"><div class="card-t">Weight History</div></div>
       <div class="sparkwrap"><svg class="spark-svg" id="wt-spark" aria-label="Weight history chart"></svg></div>
@@ -630,7 +614,6 @@ input[type=time]{background:var(--bg3);border:1px solid var(--border2);border-ra
     <div class="log-list" id="wt-log-list"></div>
     <button class="sb mb16" style="width:100%" onclick="openWeightModal()">+ Log Weight</button>
 
-    <!-- Body measurements -->
     <div class="dvd"></div>
     <div class="sec-l">Body Measurements</div>
     <div class="metric-grid">
@@ -641,19 +624,16 @@ input[type=time]{background:var(--bg3);border:1px solid var(--border2);border-ra
     </div>
     <button class="sb mb16" style="width:100%" onclick="openBodyModal()">+ Log Measurements</button>
 
-    <!-- PR Tracker -->
     <div class="dvd"></div>
     <div class="sec-l">Personal Records</div>
-    <div class="card" id="pr-card">
-      <div id="pr-list"></div>
-    </div>
+    <div class="card" id="pr-card"><div id="pr-list"></div></div>
     <button class="sb mb16" style="width:100%" onclick="openPRModal()">+ Log Personal Record</button>
   </div>
 
   <!-- ─── COACH TAB ─── -->
   <div class="tab" id="tab-coach">
     <div class="pg-title">AI COACH</div>
-    <div class="pg-sub">Gemini — knows your full profile, workouts and nutrition</div>
+    <div class="pg-sub">Gemini 2.0 — knows your full profile, workouts &amp; nutrition</div>
     <div class="ctx-chips">
       <div class="cc" onclick="ctxP('Analyze my nutrition today and tell me what I should eat for the rest of the day')">Analyze today</div>
       <div class="cc" onclick="ctxP('Review my workout progress this week and give me detailed feedback')">Workout review</div>
@@ -695,15 +675,17 @@ input[type=time]{background:var(--bg3);border:1px solid var(--border2);border-ra
     <div class="sec-l">Reminders</div>
     <div class="mb16">
       <div class="nrow"><div class="nico">WRK</div><div class="ninfo"><div class="nlbl">Workout Reminder</div><div class="nhint" id="p-wr">Disabled</div></div><button class="tog" id="p-tog-w" onclick="tgPNotif('w')" aria-label="Toggle workout reminder"></button></div>
+      <div class="tr" id="ptr-w"><span class="tl">Time:</span><input type="time" id="pt-w" onchange="saveReminderTime('w',this.value)"></div>
       <div class="nrow"><div class="nico">LOG</div><div class="ninfo"><div class="nlbl">Check-In Reminder</div><div class="nhint" id="p-cr">Disabled</div></div><button class="tog" id="p-tog-c" onclick="tgPNotif('c')" aria-label="Toggle check-in reminder"></button></div>
+      <div class="tr" id="ptr-c"><span class="tl">Time:</span><input type="time" id="pt-c" onchange="saveReminderTime('c',this.value)"></div>
     </div>
 
     <div class="sec-l">Account</div>
     <div class="mb16">
       <div class="sr"><span class="sr-l">Email</span><span class="sr-v" id="s-email">-</span></div>
-      <div class="sr"><span class="sr-l">Phone</span><span class="sr-v" id="s-phone">-</span></div>
       <div class="sr" onclick="openSplitModal()"><span class="sr-l">Training Split</span><span class="sr-v" id="s-split">PPL</span><span class="chev">&#8250;</span></div>
       <div class="sr" onclick="openBodyStatsModal()"><span class="sr-l">Body Stats</span><span class="sr-v">Edit</span><span class="chev">&#8250;</span></div>
+      <div class="sr" onclick="openChangePwModal()"><span class="sr-l">Change Password</span><span class="sr-v">Update</span><span class="chev">&#8250;</span></div>
       <div class="sr" style="margin-top:16px" onclick="doLogout()"><span class="sr-l" style="color:var(--red)">Sign Out</span></div>
     </div>
   </div>
@@ -735,95 +717,178 @@ input[type=time]{background:var(--bg3);border:1px solid var(--border2);border-ra
 
 <script>
 // ════════════════════════════════════════════════════════
-// GEMINI CONFIG
+// GEMINI CONFIG — using correct API endpoint with proper CORS support
 // ════════════════════════════════════════════════════════
-const GKEY='AQ.Ab8RN6L_qiXv2IXDEuebBFGqRbHOuYZFML5kmkNH9UvlNHfgug';
-const GURL='https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key='+GKEY;
+const GKEY = 'AQ.Ab8RN6L_qiXv2IXDEuebBFGqRbHOuYZFML5kmkNH9UvlNHfgug';
+// Use gemini-2.0-flash which supports browser CORS via REST
+const GURL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=' + GKEY;
 
 // ════════════════════════════════════════════════════════
-// ENCRYPTED LOCAL STORAGE
+// STORAGE HELPERS — simple localStorage with namespacing
 // ════════════════════════════════════════════════════════
-const enc=s=>{try{return btoa(encodeURIComponent(s).replace(/%([0-9A-F]{2})/g,(_,p)=>String.fromCharCode(parseInt(p,16))))}catch(e){return btoa(unescape(encodeURIComponent(s)))}};
-const dec=s=>{try{return decodeURIComponent(Array.from(atob(s)).map(c=>'%'+c.charCodeAt(0).toString(16).padStart(2,'0')).join(''))}catch(e){return decodeURIComponent(escape(atob(s)))}};
-const ss=(k,v)=>{try{localStorage.setItem('kf_'+enc(k),enc(JSON.stringify({v,ts:Date.now()})))}catch(e){}};
-const sg=k=>{try{const r=localStorage.getItem('kf_'+enc(k));if(!r)return null;return JSON.parse(dec(r)).v}catch(e){return null}};
-const sd=k=>{try{localStorage.removeItem('kf_'+enc(k))}catch(e){}};
+const ss = (k, v) => { try { localStorage.setItem('kf2_' + k, JSON.stringify(v)); } catch(e) {} };
+const sg = k => { try { const r = localStorage.getItem('kf2_' + k); return r ? JSON.parse(r) : null; } catch(e) { return null; } };
+const sd = k => { try { localStorage.removeItem('kf2_' + k); } catch(e) {} };
 
 // ════════════════════════════════════════════════════════
 // AUTH HELPERS
 // ════════════════════════════════════════════════════════
-async function hashPw(p){
-  const e=new TextEncoder(),km=await crypto.subtle.importKey('raw',e.encode(p),'PBKDF2',false,['deriveBits']);
-  const b=await crypto.subtle.deriveBits({name:'PBKDF2',salt:e.encode('kitofit_v2_2025'),iterations:100000,hash:'SHA-256'},km,256);
-  return enc(String.fromCharCode(...new Uint8Array(b)));
+async function hashPw(p) {
+  const e = new TextEncoder();
+  const km = await crypto.subtle.importKey('raw', e.encode(p), 'PBKDF2', false, ['deriveBits']);
+  const b = await crypto.subtle.deriveBits({ name: 'PBKDF2', salt: e.encode('kitofit_salt_2025'), iterations: 50000, hash: 'SHA-256' }, km, 256);
+  return Array.from(new Uint8Array(b)).map(x => x.toString(16).padStart(2,'0')).join('');
 }
-const genTok=em=>enc(JSON.stringify({sub:em,exp:Date.now()+604800000}))+'.'+enc(em+Math.random().toString(36).slice(2));
-const verTok=t=>{try{const p=JSON.parse(dec(t.split('.')[0]));return p.exp>Date.now()?p:null}catch{return null}};
-const validEm=e=>/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
-const validPw=p=>p.length<8?'Min 8 characters.':!/[A-Z]/.test(p)?'Need one uppercase letter.':!/[0-9]/.test(p)?'Need one number.':null;
-const getUsers=()=>sg('users')||{};
-const saveUsers=u=>ss('users',u);
-const getSess=()=>{const t=sg('sess');if(!t)return null;const p=verTok(t);if(!p){sd('sess');return null;}return getUsers()[p.sub]||null};
-const escH=s=>(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const validEm = e => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
+const validPw = p => p.length < 8 ? 'Min 8 characters.' : !/[A-Z]/.test(p) ? 'Need one uppercase letter.' : !/[0-9]/.test(p) ? 'Need one number.' : null;
+const getUsers = () => sg('users') || {};
+const saveUsers = u => ss('users', u);
+const getSess = () => { const s = sg('sess'); if (!s || s.exp < Date.now()) { sd('sess'); return null; } return getUsers()[s.em] || null; };
+const escH = s => (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 
-function swTab(t){
-  document.querySelectorAll('.atab').forEach((el,i)=>el.classList.toggle('on',t==='login'?i===0:i===1));
-  document.getElementById('f-login').classList.toggle('on',t==='login');
-  document.getElementById('f-signup').classList.toggle('on',t==='signup');
+function setBtn(id, html, disabled) {
+  const el = document.getElementById(id);
+  if (el) { el.innerHTML = html; el.disabled = !!disabled; }
 }
 
-async function doLogin(){
-  const em=document.getElementById('l-em').value.trim().toLowerCase(),pw=document.getElementById('l-pw').value,e=document.getElementById('le');
+function swTab(t) {
+  document.querySelectorAll('.atab').forEach((el, i) => el.classList.toggle('on', t === 'login' ? i === 0 : i === 1));
+  document.getElementById('f-login').classList.toggle('on', t === 'login');
+  document.getElementById('f-signup').classList.toggle('on', t === 'signup');
+}
+
+async function doLogin() {
+  const em = document.getElementById('l-em').value.trim().toLowerCase();
+  const pw = document.getElementById('l-pw').value;
+  const e = document.getElementById('le');
   e.classList.remove('show');
-  if(!em||!pw){e.textContent='Fill in all fields.';e.classList.add('show');return}
-  if(!validEm(em)){e.textContent='Invalid email.';e.classList.add('show');return}
-  const u=getUsers()[em];
-  if(!u){e.textContent='No account with this email.';e.classList.add('show');return}
-  if(u.passwordHash!==await hashPw(pw)){e.textContent='Incorrect password.';e.classList.add('show');return}
-  ss('sess',genTok(em));initApp(u);
+  if (!em || !pw) { e.textContent = 'Fill in all fields.'; e.classList.add('show'); return; }
+  if (!validEm(em)) { e.textContent = 'Invalid email format.'; e.classList.add('show'); return; }
+  setBtn('login-btn', '<span class="spin"></span>Signing in...', true);
+  const users = getUsers();
+  const u = users[em];
+  if (!u) { e.textContent = 'No account found with this email.'; e.classList.add('show'); setBtn('login-btn','Sign In',false); return; }
+  const hash = await hashPw(pw);
+  if (u.passwordHash !== hash) { e.textContent = 'Incorrect password.'; e.classList.add('show'); setBtn('login-btn','Sign In',false); return; }
+  ss('sess', { em, exp: Date.now() + 604800000 });
+  setBtn('login-btn','Sign In',false);
+  initApp(u);
 }
 
-async function doSignup(){
-  const n=document.getElementById('su-n').value.trim(),em=document.getElementById('su-em').value.trim().toLowerCase(),pw=document.getElementById('su-pw').value,ph=document.getElementById('su-ph').value.trim();
-  const e=document.getElementById('se'),s=document.getElementById('ss');
-  e.classList.remove('show');s.classList.remove('show');
-  if(!n||!em||!pw){e.textContent='Name, email and password required.';e.classList.add('show');return}
-  if(!validEm(em)){e.textContent='Invalid email.';e.classList.add('show');return}
-  const pe=validPw(pw);if(pe){e.textContent=pe;e.classList.add('show');return}
-  const users=getUsers();if(users[em]){e.textContent='Email already registered.';e.classList.add('show');return}
-  const nu={email:em,name:n,phone:ph,passwordHash:await hashPw(pw),split:'ppl',customSplit:null,goals:['Build Muscle'],experience:'intermediate',
-    body:{weight:'',weightUnit:'lbs',height:'',heightUnit:'cm',age:'',sex:'male',goalWeight:'',calTarget:''},
-    bodyMeasurements:{chest:'',waist:'',hips:'',arms:''},
-    notifications:{workout:true,ci:true,workoutTime:'07:30',ciTime:'20:00'},
-    createdAt:Date.now(),onboardingDone:false};
-  users[em]=nu;saveUsers(users);
-  s.textContent='Account created — setting up your profile...';s.classList.add('show');
-  setTimeout(()=>{ss('sess',genTok(em));APP.user=nu;showScr('onboard');obGo(1)},700);
+async function doSignup() {
+  const n = document.getElementById('su-n').value.trim();
+  const em = document.getElementById('su-em').value.trim().toLowerCase();
+  const pw = document.getElementById('su-pw').value;
+  const e = document.getElementById('se'), s = document.getElementById('ss');
+  e.classList.remove('show'); s.classList.remove('show');
+  if (!n || !em || !pw) { e.textContent = 'Name, email and password are required.'; e.classList.add('show'); return; }
+  if (!validEm(em)) { e.textContent = 'Invalid email format.'; e.classList.add('show'); return; }
+  const pe = validPw(pw); if (pe) { e.textContent = pe; e.classList.add('show'); return; }
+  const users = getUsers();
+  if (users[em]) { e.textContent = 'An account with this email already exists.'; e.classList.add('show'); return; }
+  setBtn('signup-btn','<span class="spin"></span>Creating...', true);
+  const hash = await hashPw(pw);
+  const nu = {
+    email: em, name: n, passwordHash: hash, split: 'ppl', customSplit: null,
+    goals: ['Build Muscle'], experience: 'intermediate',
+    body: { weight: '', weightUnit: 'lbs', height: '', heightUnit: 'cm', age: '', sex: 'male', goalWeight: '', calTarget: '' },
+    bodyMeasurements: { chest: '', waist: '', hips: '', arms: '' },
+    notifications: { workout: true, ci: true, workoutTime: '07:30', ciTime: '20:00' },
+    createdAt: Date.now(), onboardingDone: false
+  };
+  users[em] = nu; saveUsers(users);
+  ss('sess', { em, exp: Date.now() + 604800000 });
+  s.textContent = 'Account created — setting up your profile...'; s.classList.add('show');
+  setTimeout(() => { APP.user = nu; showScr('onboard'); obGo(1); setBtn('signup-btn','Create Account',false); }, 600);
 }
 
-const doLogout=()=>{sd('sess');CHAT.length=0;showScr('auth')};
+function showForgotPw() {
+  mkModal(`<div class="mt">Reset Password</div>
+    <div style="font-size:13px;color:var(--t2);line-height:1.6;margin-bottom:16px">Enter your email and new password below.</div>
+    <div class="emsg" id="fp-err"></div>
+    <div class="smsg" id="fp-ok"></div>
+    <div class="fl"><label class="fl-l" for="fp-em">Email</label><input type="email" class="fi" id="fp-em" placeholder="your@email.com" autocapitalize="none"></div>
+    <div class="fl"><label class="fl-l" for="fp-pw">New Password</label><input type="password" class="fi" id="fp-pw" placeholder="Min 8 chars, 1 uppercase, 1 number"></div>
+    <div class="fl"><label class="fl-l" for="fp-pw2">Confirm Password</label><input type="password" class="fi" id="fp-pw2" placeholder="Repeat password"></div>
+    <div class="row mt8"><button class="sb" onclick="closeMod()">Cancel</button><button class="pb" id="fp-btn" onclick="doResetPw()">Reset Password</button></div>`);
+}
+
+async function doResetPw() {
+  const em = (document.getElementById('fp-em').value || '').trim().toLowerCase();
+  const pw = document.getElementById('fp-pw').value;
+  const pw2 = document.getElementById('fp-pw2').value;
+  const err = document.getElementById('fp-err'), ok = document.getElementById('fp-ok');
+  err.classList.remove('show'); ok.classList.remove('show');
+  if (!em || !pw || !pw2) { err.textContent = 'All fields required.'; err.classList.add('show'); return; }
+  if (!validEm(em)) { err.textContent = 'Invalid email.'; err.classList.add('show'); return; }
+  const users = getUsers();
+  if (!users[em]) { err.textContent = 'No account found with that email.'; err.classList.add('show'); return; }
+  const pe = validPw(pw); if (pe) { err.textContent = pe; err.classList.add('show'); return; }
+  if (pw !== pw2) { err.textContent = 'Passwords do not match.'; err.classList.add('show'); return; }
+  setBtn('fp-btn','<span class="spin"></span>Saving...', true);
+  const hash = await hashPw(pw);
+  users[em].passwordHash = hash; saveUsers(users);
+  ok.textContent = 'Password updated! You can now sign in.'; ok.classList.add('show');
+  setBtn('fp-btn','Reset Password', false);
+  setTimeout(closeMod, 2000);
+}
+
+function openChangePwModal() {
+  mkModal(`<div class="mt">Change Password</div>
+    <div class="emsg" id="cp-err"></div>
+    <div class="smsg" id="cp-ok"></div>
+    <div class="fl"><label class="fl-l" for="cp-old">Current Password</label><input type="password" class="fi" id="cp-old" placeholder="Current password"></div>
+    <div class="fl"><label class="fl-l" for="cp-new">New Password</label><input type="password" class="fi" id="cp-new" placeholder="Min 8 chars, 1 uppercase, 1 number"></div>
+    <div class="fl"><label class="fl-l" for="cp-new2">Confirm New Password</label><input type="password" class="fi" id="cp-new2" placeholder="Repeat new password"></div>
+    <div class="row mt8"><button class="sb" onclick="closeMod()">Cancel</button><button class="pb" id="cp-btn" onclick="doChangePw()">Update Password</button></div>`);
+}
+
+async function doChangePw() {
+  const oldPw = document.getElementById('cp-old').value;
+  const newPw = document.getElementById('cp-new').value;
+  const newPw2 = document.getElementById('cp-new2').value;
+  const err = document.getElementById('cp-err'), ok = document.getElementById('cp-ok');
+  err.classList.remove('show'); ok.classList.remove('show');
+  if (!oldPw || !newPw || !newPw2) { err.textContent = 'All fields required.'; err.classList.add('show'); return; }
+  if (newPw !== newPw2) { err.textContent = 'New passwords do not match.'; err.classList.add('show'); return; }
+  const pe = validPw(newPw); if (pe) { err.textContent = pe; err.classList.add('show'); return; }
+  setBtn('cp-btn','<span class="spin"></span>Checking...', true);
+  const oldHash = await hashPw(oldPw);
+  const users = getUsers();
+  if (!APP.user || users[APP.user.email].passwordHash !== oldHash) {
+    err.textContent = 'Current password is incorrect.'; err.classList.add('show');
+    setBtn('cp-btn','Update Password', false); return;
+  }
+  const newHash = await hashPw(newPw);
+  users[APP.user.email].passwordHash = newHash; saveUsers(users);
+  ok.textContent = 'Password updated successfully.'; ok.classList.add('show');
+  setBtn('cp-btn','Update Password', false);
+  setTimeout(closeMod, 1500);
+}
+
+const doLogout = () => { sd('sess'); CHAT.length = 0; showScr('auth'); };
 
 // ════════════════════════════════════════════════════════
 // SCREEN CONTROL
 // ════════════════════════════════════════════════════════
-const showScr=id=>{document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById('s-'+id).classList.add('active')};
+const showScr = id => { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById('s-' + id).classList.add('active'); };
 
 // ════════════════════════════════════════════════════════
 // ONBOARDING
 // ════════════════════════════════════════════════════════
-let obSplit='ppl',obCDays=[];
+let obSplit = 'ppl', obCDays = [];
 
-function selSp(s,el){
-  obSplit=s;
-  document.querySelectorAll('.sc,.csc').forEach(c=>c.classList.remove('on'));el.classList.add('on');
-  const csb=document.getElementById('ob-csb');csb.classList.toggle('hidden',s!=='custom');
-  if(s==='custom'&&obCDays.length===0){obAddDay();obAddDay();obAddDay();}
+function selSp(s, el) {
+  obSplit = s;
+  document.querySelectorAll('.sc,.csc').forEach(c => c.classList.remove('on')); el.classList.add('on');
+  const csb = document.getElementById('ob-csb'); csb.classList.toggle('hidden', s !== 'custom');
+  if (s === 'custom' && obCDays.length === 0) { obAddDay(); obAddDay(); obAddDay(); }
 }
-const obAddDay=()=>{if(obCDays.length>=10)return;obCDays.push({name:'',isRest:false,exercises:[]});renderObDays()};
-const obRmDay=()=>{if(obCDays.length<=1)return;obCDays.pop();renderObDays()};
+const obAddDay = () => { if (obCDays.length >= 10) return; obCDays.push({ name: '', isRest: false, exercises: [] }); renderObDays(); };
+const obRmDay = () => { if (obCDays.length <= 1) return; obCDays.pop(); renderObDays(); };
 
-function renderObDays(){
-  document.getElementById('ob-csb-days').innerHTML=obCDays.map((d,di)=>`
+function renderObDays() {
+  document.getElementById('ob-csb-days').innerHTML = obCDays.map((d, di) => `
     <div class="csb-day">
       <div class="csb-hdr">
         <div class="csb-num">DAY ${di+1}</div>
@@ -834,46 +899,46 @@ function renderObDays(){
         <div class="csb-er">
           <input class="csb-ei" placeholder="Exercise name" value="${escH(ex.name)}" oninput="obCDays[${di}].exercises[${ei}].name=this.value">
           <input class="csb-si" placeholder="3x8-10" value="${escH(ex.sets)}" oninput="obCDays[${di}].exercises[${ei}].sets=this.value">
-          <div class="del-b" onclick="obDelEx(${di},${ei})" role="button" aria-label="Delete exercise"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M1 1l8 8M9 1L1 9" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+          <div class="del-b" onclick="obDelEx(${di},${ei})" role="button"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M1 1l8 8M9 1L1 9" stroke-width="1.5" stroke-linecap="round"/></svg></div>
         </div>`).join('')+
         '<button class="add-ex-b" onclick="obAddEx('+di+')">+ Add Exercise</button></div>'}
     </div>`).join('');
 }
-const obTgRest=di=>{obCDays[di].isRest=!obCDays[di].isRest;renderObDays()};
-const obAddEx=di=>{obCDays[di].exercises.push({name:'',sets:''});renderObDays()};
-const obDelEx=(di,ei)=>{obCDays[di].exercises.splice(ei,1);renderObDays()};
-const tgChip=el=>el.classList.toggle('on');
-function tgN(t){const b=document.getElementById('tog-'+t),r=document.getElementById('tr-'+t);b.classList.toggle('on');if(r)r.classList.toggle('vis',b.classList.contains('on'))}
-function obGo(s){[1,2,3,4].forEach(i=>{const e=document.getElementById('ob'+i);if(e)e.classList.toggle('hidden',i!==s)});window.scrollTo(0,0)}
+const obTgRest = di => { obCDays[di].isRest = !obCDays[di].isRest; renderObDays(); };
+const obAddEx = di => { obCDays[di].exercises.push({ name: '', sets: '' }); renderObDays(); };
+const obDelEx = (di, ei) => { obCDays[di].exercises.splice(ei, 1); renderObDays(); };
+const tgChip = el => el.classList.toggle('on');
+function tgN(t) { const b = document.getElementById('tog-'+t), r = document.getElementById('tr-'+t); b.classList.toggle('on'); if (r) r.classList.toggle('vis', b.classList.contains('on')); }
+function obGo(s) { [1,2,3,4].forEach(i => { const e = document.getElementById('ob'+i); if (e) e.classList.toggle('hidden', i !== s); }); window.scrollTo(0, 0); }
 
-async function reqNotif(){
-  if(!('Notification' in window)){document.getElementById('n-status').textContent='Not supported in this browser.';return}
-  const r=await Notification.requestPermission();
-  document.getElementById('n-status').textContent=r==='granted'?'Notifications enabled.':'Permission denied.';
-  document.getElementById('n-perm-btn').textContent=r==='granted'?'Enabled':'Try Again';
-  if(r==='granted')schedNotifs();
+async function reqNotif() {
+  if (!('Notification' in window)) { document.getElementById('n-status').textContent = 'Not supported in this browser.'; return; }
+  const r = await Notification.requestPermission();
+  document.getElementById('n-status').textContent = r === 'granted' ? '✓ Notifications enabled.' : 'Permission denied — you can enable in browser settings.';
+  document.getElementById('n-perm-btn').textContent = r === 'granted' ? 'Enabled ✓' : 'Try Again';
+  if (r === 'granted') schedNotifs();
 }
 
-function finOB(){
-  const user=APP.user;if(!user)return;
-  const goals=[...document.querySelectorAll('.chip.on')].map(e=>e.textContent.trim());
-  const customSplit=obSplit==='custom'?obCDays.map(d=>({name:d.name||'Day',isRest:!!d.isRest,exercises:d.exercises.filter(e=>e.name.trim())})):null;
-  const users=getUsers();
-  users[user.email]={...user,split:obSplit,customSplit,goals,experience:document.getElementById('ob-exp').value,
-    body:{weight:document.getElementById('ob-wt').value,weightUnit:document.getElementById('ob-wu').value,
-      height:document.getElementById('ob-ht').value,heightUnit:document.getElementById('ob-hu').value,
-      age:document.getElementById('ob-age').value,sex:document.getElementById('ob-sex').value,
-      goalWeight:document.getElementById('ob-gw').value,calTarget:document.getElementById('ob-cal').value},
-    notifications:{workout:document.getElementById('tog-w').classList.contains('on'),ci:document.getElementById('tog-c').classList.contains('on'),
-      workoutTime:document.getElementById('t-w').value,ciTime:document.getElementById('t-c').value},
-    onboardingDone:true};
-  saveUsers(users);initApp(users[user.email]);
+function finOB() {
+  const user = APP.user; if (!user) return;
+  const goals = [...document.querySelectorAll('.chip.on')].map(e => e.textContent.trim());
+  const customSplit = obSplit === 'custom' ? obCDays.map(d => ({ name: d.name || 'Day', isRest: !!d.isRest, exercises: d.exercises.filter(e => e.name.trim()) })) : null;
+  const users = getUsers();
+  users[user.email] = { ...user, split: obSplit, customSplit, goals, experience: document.getElementById('ob-exp').value,
+    body: { weight: document.getElementById('ob-wt').value, weightUnit: document.getElementById('ob-wu').value,
+      height: document.getElementById('ob-ht').value, heightUnit: document.getElementById('ob-hu').value,
+      age: document.getElementById('ob-age').value, sex: document.getElementById('ob-sex').value,
+      goalWeight: document.getElementById('ob-gw').value, calTarget: document.getElementById('ob-cal').value },
+    notifications: { workout: document.getElementById('tog-w').classList.contains('on'), ci: document.getElementById('tog-c').classList.contains('on'),
+      workoutTime: document.getElementById('t-w').value, ciTime: document.getElementById('t-c').value },
+    onboardingDone: true };
+  saveUsers(users); initApp(users[user.email]);
 }
 
 // ════════════════════════════════════════════════════════
 // TRAINING SPLITS
 // ════════════════════════════════════════════════════════
-const SPLITS={
+const SPLITS = {
   ppl:{name:'PPL',freq:'6 days/week',days:[
     {lbl:'D1',name:'Push',tag:'push',ex:[{n:'Bench Press',s:'4x6-8'},{n:'Incline DB Press',s:'3x8-10'},{n:'Overhead Press',s:'3x8-10'},{n:'Lateral Raises',s:'4x12-15'},{n:'Tricep Pushdowns',s:'3x12-15'},{n:'Overhead Tricep Ext',s:'3x12-15'}]},
     {lbl:'D2',name:'Pull',tag:'pull',ex:[{n:'Deadlift',s:'4x4-6'},{n:'Barbell Row',s:'3x6-8'},{n:'Pull-Ups',s:'3x8-12'},{n:'Face Pulls',s:'3x15-20'},{n:'Barbell Curl',s:'3x10-12'},{n:'Hammer Curls',s:'3x10-12'}]},
@@ -920,220 +985,202 @@ const SPLITS={
     {lbl:'SAT',name:'Rest',tag:'rest',ex:[]},{lbl:'SUN',name:'Rest',tag:'rest',ex:[]}]}
 };
 
-function getActiveSplit(){
-  if(APP.split==='custom'&&APP.user&&APP.user.customSplit){
-    return{name:'Custom Split',freq:APP.user.customSplit.filter(d=>!d.isRest).length+' days/week',
-      days:APP.user.customSplit.map((d,i)=>({lbl:'D'+(i+1),name:d.name||'Day '+(i+1),tag:d.isRest?'rest':'custom',ex:(d.exercises||[].map(e=>({n:e.name||e.n||'',s:e.sets||e.s||''})))}))}
+function getActiveSplit() {
+  if (APP.split === 'custom' && APP.user && APP.user.customSplit) {
+    return { name: 'Custom Split', freq: APP.user.customSplit.filter(d => !d.isRest).length + ' days/week',
+      days: APP.user.customSplit.map((d, i) => ({ lbl: 'D'+(i+1), name: d.name || 'Day '+(i+1), tag: d.isRest ? 'rest' : 'custom',
+        ex: (d.exercises || []).map(e => ({ n: e.name || e.n || '', s: e.sets || e.s || '' })) })) };
   }
-  return SPLITS[APP.split]||SPLITS.ppl;
+  return SPLITS[APP.split] || SPLITS.ppl;
 }
 
 // ════════════════════════════════════════════════════════
 // APP STATE
 // ════════════════════════════════════════════════════════
-const APP={user:null,split:'ppl',todayIdx:0,exStates:{},checkins:0,workouts:0,streak:0,mood:'good'};
-const CHAT=[];
-let camStream=null;
+const APP = { user: null, split: 'ppl', todayIdx: 0, exStates: {}, checkins: 0, workouts: 0, streak: 0, mood: 'good' };
+const CHAT = [];
+let camStream = null;
 
 // ════════════════════════════════════════════════════════
 // INIT APP
 // ════════════════════════════════════════════════════════
-function initApp(user){
-  APP.user=user;APP.split=user.split||'ppl';
-  APP.checkins=sg('ci_'+user.email)||0;
-  APP.workouts=sg('wk_'+user.email)||0;
-  APP.streak=sg('sk_'+user.email)||0;
+function initApp(user) {
+  APP.user = user; APP.split = user.split || 'ppl';
+  APP.checkins = sg('ci_' + user.email) || 0;
+  APP.workouts = sg('wk_' + user.email) || 0;
+  APP.streak = sg('sk_' + user.email) || 0;
   showScr('app');
 
-  const h=new Date().getHours();
-  document.getElementById('greet-txt').textContent=(h<12?'Good morning':h<17?'Good afternoon':'Good evening')+' \u2014 '+user.name.split(' ')[0];
-  const ini=user.name.split(' ').filter(Boolean).map(n=>n[0]).join('').slice(0,2).toUpperCase();
-  ['usr-av','pav'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=ini});
+  const h = new Date().getHours();
+  document.getElementById('greet-txt').textContent = (h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening') + ' — ' + user.name.split(' ')[0];
+  const ini = user.name.split(' ').filter(Boolean).map(n => n[0]).join('').slice(0, 2).toUpperCase();
+  ['usr-av','pav'].forEach(id => { const el = document.getElementById(id); if (el) el.textContent = ini; });
 
-  const today=new Date();
-  const dn=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-  const mn=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  document.getElementById('today-lbl').textContent=dn[today.getDay()]+', '+mn[today.getMonth()]+' '+today.getDate();
-  const dow=today.getDay();APP.todayIdx=dow===0?6:dow-1;
-  APP.exStates=sg('ex_'+user.email+'_'+today.toDateString())||{};
+  const today = new Date();
+  const dn = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const mn = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  document.getElementById('today-lbl').textContent = dn[today.getDay()] + ', ' + mn[today.getMonth()] + ' ' + today.getDate();
+  const dow = today.getDay(); APP.todayIdx = dow === 0 ? 6 : dow - 1;
+  APP.exStates = sg('ex_' + user.email + '_' + today.toDateString()) || {};
 
-  const sp=getActiveSplit();
-  const day=sp.days[APP.todayIdx%sp.days.length];
-  document.getElementById('today-title').textContent=day.tag==='rest'?'REST DAY':day.name.toUpperCase();
-  document.getElementById('streak-txt').textContent=APP.streak+'-Day Streak';
+  const sp = getActiveSplit();
+  const day = sp.days[APP.todayIdx % sp.days.length];
+  document.getElementById('today-title').textContent = day.tag === 'rest' ? 'REST DAY' : day.name.toUpperCase();
+  document.getElementById('streak-txt').textContent = APP.streak + '-Day Streak';
 
-  renderToday(day);renderHeatStrip();renderWater();renderSchedule();renderProfile();renderNutrition();renderPRs();
+  renderToday(day); renderHeatStrip(); renderSchedule(); renderProfile(); renderNutrition(); renderPRs();
   schedNotifs();
 }
 
 // ════════════════════════════════════════════════════════
 // NOTIFICATIONS
 // ════════════════════════════════════════════════════════
-let notifInts=[];
-function schedNotifs(){
-  notifInts.forEach(clearInterval);notifInts=[];
-  if(!('Notification' in window)||Notification.permission!=='granted')return;
-  const u=APP.user;if(!u||!u.notifications)return;
-  const sp=getActiveSplit();const day=sp.days[APP.todayIdx%sp.days.length];
-  const chkTime=(target,msg)=>setInterval(()=>{const now=new Date(),cur=now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');if(cur===target&&now.getSeconds()<5)new Notification('KitoFit',{body:msg,icon:'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><text y="26" font-size="28">K</text></svg>'})},4000);
-  if(u.notifications.workout)notifInts.push(chkTime(u.notifications.workoutTime,day.tag==='rest'?'Rest day \u2014 prioritize recovery and nutrition.':'Time to train: '+day.name+'.'));
-  if(u.notifications.ci)notifInts.push(chkTime(u.notifications.ciTime,'Log your check-in and food for today.'));
+let notifInts = [];
+function schedNotifs() {
+  notifInts.forEach(clearInterval); notifInts = [];
+  if (!('Notification' in window) || Notification.permission !== 'granted') return;
+  const u = APP.user; if (!u || !u.notifications) return;
+  const sp = getActiveSplit(); const day = sp.days[APP.todayIdx % sp.days.length];
+  const chkTime = (target, msg) => setInterval(() => {
+    const now = new Date(), cur = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+    if (cur === target && now.getSeconds() < 5) new Notification('KitoFit', { body: msg });
+  }, 4000);
+  if (u.notifications.workout) notifInts.push(chkTime(u.notifications.workoutTime, day.tag === 'rest' ? 'Rest day — prioritize recovery.' : 'Time to train: ' + day.name + '.'));
+  if (u.notifications.ci) notifInts.push(chkTime(u.notifications.ciTime, 'Log your check-in for today.'));
 }
-function tgPNotif(t){
-  const key=t==='w'?'workout':'ci';const btn=document.getElementById('p-tog-'+t);
-  const newVal=!APP.user.notifications[key];btn.classList.toggle('on',newVal);
-  const users=getUsers();users[APP.user.email].notifications[key]=newVal;saveUsers(users);APP.user=users[APP.user.email];
-  document.getElementById('p-'+(t==='w'?'wr':'cr')).textContent=newVal?(APP.user.notifications[t==='w'?'workoutTime':'ciTime']+' daily'):'Disabled';
+function tgPNotif(t) {
+  const key = t === 'w' ? 'workout' : 'ci';
+  const btn = document.getElementById('p-tog-' + t);
+  const newVal = !APP.user.notifications[key]; btn.classList.toggle('on', newVal);
+  const tr = document.getElementById('ptr-' + t); if (tr) tr.classList.toggle('vis', newVal);
+  const users = getUsers(); users[APP.user.email].notifications[key] = newVal; saveUsers(users); APP.user = users[APP.user.email];
+  document.getElementById('p-' + (t === 'w' ? 'wr' : 'cr')).textContent = newVal ? (APP.user.notifications[t === 'w' ? 'workoutTime' : 'ciTime'] + ' daily') : 'Disabled';
+  schedNotifs();
+}
+function saveReminderTime(t, val) {
+  const key = t === 'w' ? 'workoutTime' : 'ciTime';
+  const users = getUsers(); users[APP.user.email].notifications[key] = val; saveUsers(users); APP.user = users[APP.user.email];
+  document.getElementById('p-' + (t === 'w' ? 'wr' : 'cr')).textContent = val + ' daily';
   schedNotifs();
 }
 
 // ════════════════════════════════════════════════════════
 // TODAY + HEAT STRIP
 // ════════════════════════════════════════════════════════
-function renderHeatStrip(){
-  const abbr=['M','T','W','T','F','S','S'];
-  const today=new Date();const todayStr=today.toDateString();
-  let html='';
-  for(let i=0;i<7;i++){
-    const d=new Date(today);
-    d.setDate(today.getDate()-today.getDay()+(i===0?1:i+1));// Mon–Sun
-    // Monday=0 offset
-    const offset=i;
-    const dt=new Date(today);const dow=today.getDay();
-    const diff=i-(dow===0?6:dow-1);dt.setDate(today.getDate()+diff);
-    const dStr=dt.toDateString();
-    const sp=getActiveSplit();const dayDef=sp.days[i%sp.days.length];
-    const isRest=dayDef.tag==='rest';
-    const exSt=sg('ex_'+APP.user.email+'_'+dStr)||{};
-    const exCount=Object.keys(exSt).filter(k=>exSt[k]).length;
-    const totalEx=dayDef.ex?dayDef.ex.length:0;
-    let cls='heat-dot';
-    if(dStr===todayStr)cls+=' today-ring';
-    if(isRest)cls+=' rest';
-    else if(exCount>0&&exCount===totalEx)cls+=' done';
-    else if(exCount>0)cls+=' partial';
-    html+=`<div class="heat-day"><div class="heat-lbl">${abbr[i]}</div><div class="${cls}" role="img" aria-label="${dt.toLocaleDateString()} - ${isRest?'rest':exCount+'/'+totalEx+' exercises'}"></div></div>`;
+function renderHeatStrip() {
+  const abbr = ['M','T','W','T','F','S','S'];
+  const today = new Date(); const todayStr = today.toDateString();
+  let html = '';
+  for (let i = 0; i < 7; i++) {
+    const dt = new Date(today); const dow = today.getDay();
+    const diff = i - (dow === 0 ? 6 : dow - 1); dt.setDate(today.getDate() + diff);
+    const dStr = dt.toDateString();
+    const sp = getActiveSplit(); const dayDef = sp.days[i % sp.days.length];
+    const isRest = dayDef.tag === 'rest';
+    const exSt = sg('ex_' + APP.user.email + '_' + dStr) || {};
+    const exCount = Object.keys(exSt).filter(k => exSt[k]).length;
+    const totalEx = dayDef.ex ? dayDef.ex.length : 0;
+    let cls = 'heat-dot';
+    if (dStr === todayStr) cls += ' today-ring';
+    if (isRest) cls += ' rest';
+    else if (exCount > 0 && exCount === totalEx) cls += ' done';
+    else if (exCount > 0) cls += ' partial';
+    html += `<div class="heat-day"><div class="heat-lbl">${abbr[i]}</div><div class="${cls}"></div></div>`;
   }
-  document.getElementById('heat-strip').innerHTML=html;
+  document.getElementById('heat-strip').innerHTML = html;
 }
 
-function renderToday(day){
-  const c=document.getElementById('today-content');
-  if(day.tag==='rest'){
-    c.innerHTML='<div class="rest-block"><div class="rest-sup">Rest Day Protocol</div><div class="rest-t">Active Recovery</div><div class="rest-s">Rest is where growth happens. Prioritize sleep, hit your protein target, and do light mobility work. Your muscles are rebuilding right now.</div></div>';
+function renderToday(day) {
+  const c = document.getElementById('today-content');
+  if (day.tag === 'rest') {
+    c.innerHTML = '<div class="rest-block"><div class="rest-sup">Rest Day Protocol</div><div class="rest-t">Active Recovery</div><div class="rest-s">Rest is where growth happens. Prioritize sleep, hit your protein target, and do light mobility work.</div></div>';
     return;
   }
-  const done=day.ex.filter((_,i)=>APP.exStates[i]).length;
-  const pct=day.ex.length?Math.round(done/day.ex.length*100):0;
-  const rows=day.ex.map((e,i)=>{const d=!!APP.exStates[i];return`
-    <div class="ex-row" onclick="togEx(${i})" role="checkbox" aria-checked="${d}" aria-label="${e.n}">
+  const done = day.ex.filter((_, i) => APP.exStates[i]).length;
+  const pct = day.ex.length ? Math.round(done / day.ex.length * 100) : 0;
+  const rows = day.ex.map((e, i) => { const d = !!APP.exStates[i]; return `
+    <div class="ex-row" onclick="togEx(${i})" role="checkbox" aria-checked="${d}">
       <div class="ex-chk${d?' done':''}" id="ec-${i}">
-        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M2 6l3 3 5-5" stroke="#080909" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#080909" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </div>
       <div class="ex-nm${d?' done':''}">${escH(e.n)}</div>
       <div class="ex-st">${escH(e.s)}</div>
-    </div>`}).join('');
-  c.innerHTML=`
+    </div>`; }).join('');
+  c.innerHTML = `
     <div class="card">
       <div class="card-hdr">
         <div class="card-t">${escH(day.name)}</div>
         <div class="card-b" id="ex-badge">${done}/${day.ex.length}</div>
       </div>
       <div style="width:100%;height:3px;background:var(--bg4)">
-        <div style="height:3px;background:var(--lime);width:${pct}%;transition:width .4s ease" id="wprog" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100"></div>
+        <div style="height:3px;background:var(--lime);width:${pct}%;transition:width .4s ease" id="wprog"></div>
       </div>
       <div>${rows}</div>
     </div>`;
 }
 
-function togEx(i){
-  APP.exStates[i]=!APP.exStates[i];
-  ss('ex_'+APP.user.email+'_'+new Date().toDateString(),APP.exStates);
-  const day=getActiveSplit().days[APP.todayIdx%getActiveSplit().days.length];
-  const done=day.ex.filter((_,j)=>APP.exStates[j]).length;
-  const pct=day.ex.length?Math.round(done/day.ex.length*100):0;
-  day.ex.forEach((_,j)=>{
-    const el=document.getElementById('ec-'+j);
-    if(!el)return;
-    el.classList.toggle('done',!!APP.exStates[j]);
-    const nm=el.nextElementSibling;if(nm)nm.classList.toggle('done',!!APP.exStates[j]);
+function togEx(i) {
+  APP.exStates[i] = !APP.exStates[i];
+  ss('ex_' + APP.user.email + '_' + new Date().toDateString(), APP.exStates);
+  const day = getActiveSplit().days[APP.todayIdx % getActiveSplit().days.length];
+  const done = day.ex.filter((_, j) => APP.exStates[j]).length;
+  const pct = day.ex.length ? Math.round(done / day.ex.length * 100) : 0;
+  day.ex.forEach((_, j) => {
+    const el = document.getElementById('ec-' + j); if (!el) return;
+    el.classList.toggle('done', !!APP.exStates[j]);
+    const nm = el.nextElementSibling; if (nm) nm.classList.toggle('done', !!APP.exStates[j]);
   });
-  const b=document.getElementById('ex-badge');if(b)b.textContent=done+'/'+day.ex.length;
-  const p=document.getElementById('wprog');if(p){p.style.width=pct+'%';p.setAttribute('aria-valuenow',pct);}
+  const b = document.getElementById('ex-badge'); if (b) b.textContent = done + '/' + day.ex.length;
+  const p = document.getElementById('wprog'); if (p) p.style.width = pct + '%';
   renderHeatStrip();
-  if(day.ex.length>0&&day.ex.every((_,j)=>APP.exStates[j])){
-    APP.workouts++;ss('wk_'+APP.user.email,APP.workouts);
-    // Update streak
-    const lastWk=sg('last_wk_'+APP.user.email);const todayStr=new Date().toDateString();
-    if(lastWk!==todayStr){
-      const yd=new Date();yd.setDate(yd.getDate()-1);
-      if(sg('last_wk_'+APP.user.email)===yd.toDateString()){APP.streak++}else{APP.streak=1;}
-      ss('sk_'+APP.user.email,APP.streak);ss('last_wk_'+APP.user.email,todayStr);
-      document.getElementById('streak-txt').textContent=APP.streak+'-Day Streak';
+  if (day.ex.length > 0 && day.ex.every((_, j) => APP.exStates[j])) {
+    APP.workouts++; ss('wk_' + APP.user.email, APP.workouts);
+    const lastWk = sg('last_wk_' + APP.user.email); const todayStr = new Date().toDateString();
+    if (lastWk !== todayStr) {
+      const yd = new Date(); yd.setDate(yd.getDate() - 1);
+      APP.streak = sg('last_wk_' + APP.user.email) === yd.toDateString() ? APP.streak + 1 : 1;
+      ss('sk_' + APP.user.email, APP.streak); ss('last_wk_' + APP.user.email, todayStr);
+      document.getElementById('streak-txt').textContent = APP.streak + '-Day Streak';
     }
-    document.getElementById('s-wk').textContent=APP.workouts;
-    document.getElementById('s-sk').textContent=APP.streak;
-    setTimeout(()=>mkModal(`<div class="mt">Workout Complete</div><div style="font-size:14px;color:var(--t2);line-height:1.6;margin-bottom:18px">${day.name} session done. ${APP.streak} day streak. Keep going.</div><button class="pb" onclick="closeMod()">Close</button>`),200);
+    document.getElementById('s-wk').textContent = APP.workouts;
+    document.getElementById('s-sk').textContent = APP.streak;
+    setTimeout(() => mkModal(`<div class="mt">Workout Complete 🔥</div><div style="font-size:14px;color:var(--t2);line-height:1.6;margin-bottom:18px">${day.name} session done. ${APP.streak} day streak. Keep going.</div><button class="pb" onclick="closeMod()">Close</button>`), 200);
   }
 }
 
-function selMood(el,m){document.querySelectorAll('.mb-btn').forEach(b=>b.classList.remove('on'));el.classList.add('on');APP.mood=m}
+function selMood(el, m) { document.querySelectorAll('.mb-btn').forEach(b => b.classList.remove('on')); el.classList.add('on'); APP.mood = m; }
 
-function submitCI(){
-  APP.checkins++;ss('ci_'+APP.user.email,APP.checkins);
-  document.getElementById('s-ci').textContent=APP.checkins;
-  const notes=document.getElementById('ci-notes').value;
-  const log=sg('ci_log_'+APP.user.email)||[];
-  log.push({date:new Date().toISOString(),mood:APP.mood,notes});
-  ss('ci_log_'+APP.user.email,log);
-  document.getElementById('ci-notes').value='';
-  mkModal('<div class="mt">Check-In Logged</div><div style="font-size:14px;color:var(--t2);line-height:1.6;margin-bottom:18px">Mood: '+APP.mood+'. '+APP.checkins+' total check-ins.</div><button class="pb" onclick="closeMod()">Done</button>');
+function submitCI() {
+  APP.checkins++; ss('ci_' + APP.user.email, APP.checkins);
+  document.getElementById('s-ci').textContent = APP.checkins;
+  const notes = document.getElementById('ci-notes').value;
+  const log = sg('ci_log_' + APP.user.email) || [];
+  log.push({ date: new Date().toISOString(), mood: APP.mood, notes });
+  ss('ci_log_' + APP.user.email, log);
+  document.getElementById('ci-notes').value = '';
+  mkModal('<div class="mt">Check-In Logged</div><div style="font-size:14px;color:var(--t2);line-height:1.6;margin-bottom:18px">Mood: ' + APP.mood + '. ' + APP.checkins + ' total check-ins.</div><button class="pb" onclick="closeMod()">Done</button>');
 }
-
-// ════════════════════════════════════════════════════════
-// WATER TRACKER
-// ════════════════════════════════════════════════════════
-function renderWater(){
-  const today=new Date().toDateString();
-  const count=sg('water_'+APP.user.email+'_'+today)||0;
-  const gl=document.getElementById('water-glasses');
-  const badge=document.getElementById('water-badge');
-  if(!gl||!badge)return;
-  badge.textContent=count+'/8';
-  let h='';
-  for(let i=0;i<8;i++){
-    h+=`<div class="water-glass${i<count?' filled':''}" onclick="logWater(${i})" role="button" aria-label="Glass ${i+1}" aria-pressed="${i<count}"></div>`;
-  }
-  gl.innerHTML=h;
-}
-function logWater(idx){
-  const today=new Date().toDateString();
-  const current=sg('water_'+APP.user.email+'_'+today)||0;
-  const newCount=idx<current?idx:idx+1;
-  ss('water_'+APP.user.email+'_'+today,newCount);renderWater();
-}
-function resetWater(){ss('water_'+APP.user.email+'_'+new Date().toDateString(),0);renderWater();}
 
 // ════════════════════════════════════════════════════════
 // SCHEDULE
 // ════════════════════════════════════════════════════════
-function renderSchedule(){
-  const sp=getActiveSplit();
-  document.getElementById('split-disp').textContent=sp.name+' \u2014 '+sp.freq;
-  document.getElementById('split-sel').value=APP.split;
-  document.getElementById('s-split').textContent=APP.split==='custom'?'Custom':sp.name;
-  document.getElementById('psub').textContent=sp.name;
-  const abbr=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-  const today=new Date();
-  const strip=document.getElementById('week-strip');strip.innerHTML='';
-  for(let i=0;i<7;i++){
-    const d=new Date(today);d.setDate(today.getDate()-today.getDay()+i);
-    const isT=d.toDateString()===today.toDateString();
-    const idx=(i===0?6:i-1);const dd=sp.days[idx%sp.days.length];
-    strip.innerHTML+=`<div class="wd${isT?' today':''}${dd.tag==='rest'?' rest-day':''}" aria-label="${abbr[i]} ${d.getDate()}${isT?' (today)':''}"><span class="wd-a">${abbr[i]}</span><span class="wd-n">${d.getDate()}</span><div class="wd-dot"></div></div>`;
+function renderSchedule() {
+  const sp = getActiveSplit();
+  document.getElementById('split-disp').textContent = sp.name + ' — ' + sp.freq;
+  document.getElementById('split-sel').value = APP.split;
+  document.getElementById('s-split').textContent = APP.split === 'custom' ? 'Custom' : sp.name;
+  document.getElementById('psub').textContent = sp.name;
+  const abbr = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const today = new Date();
+  const strip = document.getElementById('week-strip'); strip.innerHTML = '';
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(today); d.setDate(today.getDate() - today.getDay() + i);
+    const isT = d.toDateString() === today.toDateString();
+    const idx = (i === 0 ? 6 : i - 1); const dd = sp.days[idx % sp.days.length];
+    strip.innerHTML += `<div class="wd${isT?' today':''}${dd.tag==='rest'?' rest-day':''}"><span class="wd-a">${abbr[i]}</span><span class="wd-n">${d.getDate()}</span><div class="wd-dot"></div></div>`;
   }
-  const ti=APP.todayIdx;
-  document.getElementById('split-ov').innerHTML=sp.days.map((d,i)=>`
+  const ti = APP.todayIdx;
+  document.getElementById('split-ov').innerHTML = sp.days.map((d, i) => `
     <div class="sday${i===ti%sp.days.length?' act':''}">
       <div class="sday-l">${d.lbl}</div>
       <div class="sday-n">${escH(d.name)}</div>
@@ -1141,32 +1188,32 @@ function renderSchedule(){
     </div>`).join('');
 }
 
-function changeSplit(v){
-  APP.split=v;const users=getUsers();
-  if(APP.user){users[APP.user.email]={...APP.user,split:v};saveUsers(users);APP.user=users[APP.user.email];}
+function changeSplit(v) {
+  APP.split = v; const users = getUsers();
+  if (APP.user) { users[APP.user.email] = { ...APP.user, split: v }; saveUsers(users); APP.user = users[APP.user.email]; }
   renderSchedule();
-  const day=getActiveSplit().days[APP.todayIdx%getActiveSplit().days.length];
-  document.getElementById('today-title').textContent=day.tag==='rest'?'REST DAY':day.name.toUpperCase();
-  APP.exStates={};renderToday(day);renderHeatStrip();
+  const day = getActiveSplit().days[APP.todayIdx % getActiveSplit().days.length];
+  document.getElementById('today-title').textContent = day.tag === 'rest' ? 'REST DAY' : day.name.toUpperCase();
+  APP.exStates = {}; renderToday(day); renderHeatStrip();
 }
 
-function openSplitModal(){
-  mkModal('<div class="mt">Change Program</div><select class="fi mb12" id="m-sp">'+
-    Object.entries(SPLITS).map(([k,v])=>`<option value="${k}"${k===APP.split?' selected':''}>${v.name}</option>`).join('')+
-    `<option value="custom"${APP.split==='custom'?' selected':''}>My Custom Split</option>
-    </select><div class="row"><button class="sb" onclick="closeMod()">Cancel</button><button class="pb" onclick="applySpMod()">Apply</button></div>`);
+function openSplitModal() {
+  mkModal('<div class="mt">Change Program</div><select class="fi mb12" id="m-sp">' +
+    Object.entries(SPLITS).map(([k,v]) => `<option value="${k}"${k===APP.split?' selected':''}>${v.name}</option>`).join('') +
+    `<option value="custom"${APP.split==='custom'?' selected':''}>My Custom Split</option></select>
+    <div class="row"><button class="sb" onclick="closeMod()">Cancel</button><button class="pb" onclick="applySpMod()">Apply</button></div>`);
 }
-const applySpMod=()=>{const v=document.getElementById('m-sp').value;closeMod();changeSplit(v);document.getElementById('split-sel').value=v;goTab('schedule')};
+const applySpMod = () => { const v = document.getElementById('m-sp').value; closeMod(); changeSplit(v); document.getElementById('split-sel').value = v; goTab('schedule'); };
 
-function openCSBEditor(){
-  if(APP.user.customSplit)obCDays=APP.user.customSplit.map(d=>({name:d.name||'',isRest:!!d.isRest,exercises:(d.exercises||[]).map(e=>({name:e.name||e.n||'',sets:e.sets||e.s||''}))}));
-  else obCDays=[{name:'',isRest:false,exercises:[]},{name:'',isRest:false,exercises:[]},{name:'',isRest:true,exercises:[]}];
+function openCSBEditor() {
+  if (APP.user.customSplit) obCDays = APP.user.customSplit.map(d => ({ name: d.name || '', isRest: !!d.isRest, exercises: (d.exercises || []).map(e => ({ name: e.name || e.n || '', sets: e.sets || e.s || '' })) }));
+  else obCDays = [{ name: '', isRest: false, exercises: [] }, { name: '', isRest: false, exercises: [] }, { name: '', isRest: true, exercises: [] }];
   mkModal('<div class="mt">Custom Split</div><div id="csb-m-days"></div><div class="row mt8 mb12"><button class="sb" onclick="csbAdd()">+ Day</button><button class="sb" onclick="csbRm()">Remove Last</button></div><div class="row"><button class="sb" onclick="closeMod()">Cancel</button><button class="pb" onclick="saveCSB()">Save Split</button></div>');
   renderCSBM();
 }
-function renderCSBM(){
-  const c=document.getElementById('csb-m-days');if(!c)return;
-  c.innerHTML=obCDays.map((d,di)=>`
+function renderCSBM() {
+  const c = document.getElementById('csb-m-days'); if (!c) return;
+  c.innerHTML = obCDays.map((d, di) => `
     <div class="csb-day">
       <div class="csb-hdr">
         <div class="csb-num">DAY ${di+1}</div>
@@ -1177,244 +1224,313 @@ function renderCSBM(){
         <div class="csb-er">
           <input class="csb-ei" placeholder="Exercise name" value="${escH(ex.name)}" oninput="obCDays[${di}].exercises[${ei}].name=this.value">
           <input class="csb-si" placeholder="3x8-10" value="${escH(ex.sets||ex.s||'')}" oninput="obCDays[${di}].exercises[${ei}].sets=this.value">
-          <div class="del-b" onclick="csbDelE(${di},${ei})" role="button" aria-label="Delete"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M1 1l8 8M9 1L1 9" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+          <div class="del-b" onclick="csbDelE(${di},${ei})"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M1 1l8 8M9 1L1 9" stroke-width="1.5" stroke-linecap="round"/></svg></div>
         </div>`).join('')}
         <button class="add-ex-b" onclick="csbAddE(${di})">+ Add Exercise</button>
       </div>`}
     </div>`).join('');
 }
-const csbTgR=di=>{obCDays[di].isRest=!obCDays[di].isRest;renderCSBM()};
-const csbAddE=di=>{obCDays[di].exercises.push({name:'',sets:''});renderCSBM()};
-const csbDelE=(di,ei)=>{obCDays[di].exercises.splice(ei,1);renderCSBM()};
-const csbAdd=()=>{if(obCDays.length<10){obCDays.push({name:'',isRest:false,exercises:[]});renderCSBM()}};
-const csbRm=()=>{if(obCDays.length>1){obCDays.pop();renderCSBM()}};
-function saveCSB(){
-  const cd=obCDays.map(d=>({name:d.name||'Day',isRest:!!d.isRest,exercises:d.exercises.filter(e=>(e.name||e.n||'').trim()).map(e=>({name:e.name||e.n,sets:e.sets||e.s||''}))}));
-  const users=getUsers();users[APP.user.email]={...APP.user,customSplit:cd,split:'custom'};
-  saveUsers(users);APP.user=users[APP.user.email];APP.split='custom';
-  closeMod();renderSchedule();
-  const day=getActiveSplit().days[APP.todayIdx%getActiveSplit().days.length];
-  document.getElementById('today-title').textContent=day.tag==='rest'?'REST DAY':day.name.toUpperCase();
-  APP.exStates={};renderToday(day);document.getElementById('split-sel').value='custom';
+const csbTgR = di => { obCDays[di].isRest = !obCDays[di].isRest; renderCSBM(); };
+const csbAddE = di => { obCDays[di].exercises.push({ name: '', sets: '' }); renderCSBM(); };
+const csbDelE = (di, ei) => { obCDays[di].exercises.splice(ei, 1); renderCSBM(); };
+const csbAdd = () => { if (obCDays.length < 10) { obCDays.push({ name: '', isRest: false, exercises: [] }); renderCSBM(); } };
+const csbRm = () => { if (obCDays.length > 1) { obCDays.pop(); renderCSBM(); } };
+function saveCSB() {
+  const cd = obCDays.map(d => ({ name: d.name || 'Day', isRest: !!d.isRest, exercises: d.exercises.filter(e => (e.name||e.n||'').trim()).map(e => ({ name: e.name||e.n, sets: e.sets||e.s||'' })) }));
+  const users = getUsers(); users[APP.user.email] = { ...APP.user, customSplit: cd, split: 'custom' };
+  saveUsers(users); APP.user = users[APP.user.email]; APP.split = 'custom';
+  closeMod(); renderSchedule();
+  const day = getActiveSplit().days[APP.todayIdx % getActiveSplit().days.length];
+  document.getElementById('today-title').textContent = day.tag === 'rest' ? 'REST DAY' : day.name.toUpperCase();
+  APP.exStates = {}; renderToday(day); document.getElementById('split-sel').value = 'custom';
+}
+
+// ════════════════════════════════════════════════════════
+// GEMINI API CALL — fixed with proper error handling
+// ════════════════════════════════════════════════════════
+async function callGemini(payload) {
+  const res = await fetch(GURL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+  if (!res.ok) {
+    const errText = await res.text();
+    throw new Error('API error ' + res.status + ': ' + errText);
+  }
+  return res.json();
 }
 
 // ════════════════════════════════════════════════════════
 // CAMERA — AI FOOD SCAN
 // ════════════════════════════════════════════════════════
-async function openCam(){
-  document.getElementById('cam-overlay').style.display='flex';
-  try{
-    camStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment',width:{ideal:1280},height:{ideal:720}}});
-    document.getElementById('cam-video').srcObject=camStream;
-  }catch(err){alert('Camera access denied. Allow camera in browser settings.');closeCam();}
+async function openCam() {
+  document.getElementById('cam-overlay').style.display = 'flex';
+  try {
+    camStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } } });
+    document.getElementById('cam-video').srcObject = camStream;
+  } catch(err) {
+    alert('Camera access denied. Please allow camera access in your browser settings and try again.');
+    closeCam();
+  }
 }
-function closeCam(){if(camStream){camStream.getTracks().forEach(t=>t.stop());camStream=null;}document.getElementById('cam-overlay').style.display='none';}
+function closeCam() {
+  if (camStream) { camStream.getTracks().forEach(t => t.stop()); camStream = null; }
+  document.getElementById('cam-overlay').style.display = 'none';
+}
 
-async function snapFood(){
-  const video=document.getElementById('cam-video'),canvas=document.getElementById('cam-canvas');
-  canvas.width=video.videoWidth;canvas.height=video.videoHeight;
-  canvas.getContext('2d').drawImage(video,0,0);
-  const imgData=canvas.toDataURL('image/jpeg',0.85).split(',')[1];
-  closeCam();showAIOverlay('Analyzing food image...');
-  try{
-    const res=await fetch(GURL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[
-      {inline_data:{mime_type:'image/jpeg',data:imgData}},
-      {text:'You are a precise nutrition analyzer. Estimate the nutritional content of this food image. Respond ONLY with valid JSON, no markdown, no extra text. Format: {"name":"food name","calories":000,"protein":00,"carbs":00,"fat":00,"serving":"estimated portion","confidence":"high/medium/low","notes":"brief accuracy note"}'}
-    ]}],generationConfig:{maxOutputTokens:300,temperature:0.2}})});
-    const data=await res.json();hideAIOverlay();
-    const text=data.candidates?.[0]?.content?.parts?.[0]?.text||'{}';
-    let food;try{food=JSON.parse(text.replace(/```json|```/g,'').trim())}catch{food={name:'Food (estimated)',calories:200,protein:15,carbs:20,fat:8,serving:'1 serving',confidence:'low'}}
-    showFoodResult(food,'AI Photo Scan');
-  }catch(err){hideAIOverlay();alert('Could not analyze image. Try manual entry.');}
+async function snapFood() {
+  const video = document.getElementById('cam-video'), canvas = document.getElementById('cam-canvas');
+  canvas.width = video.videoWidth; canvas.height = video.videoHeight;
+  canvas.getContext('2d').drawImage(video, 0, 0);
+  const imgData = canvas.toDataURL('image/jpeg', 0.8).split(',')[1];
+  closeCam();
+  showAIOverlay('Analyzing food image with AI...');
+  try {
+    const data = await callGemini({
+      contents: [{ parts: [
+        { inline_data: { mime_type: 'image/jpeg', data: imgData } },
+        { text: 'You are a precise nutrition analyzer. Estimate the nutritional content of the food in this image. Respond ONLY with a valid JSON object (no markdown, no extra text, no code blocks). Format exactly: {"name":"food name","calories":250,"protein":20,"carbs":30,"fat":8,"serving":"estimated portion size","confidence":"high/medium/low","notes":"brief accuracy note"}' }
+      ] }],
+      generationConfig: { maxOutputTokens: 400, temperature: 0.1 }
+    });
+    hideAIOverlay();
+    let text = data.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
+    // Strip any markdown code blocks if present
+    text = text.replace(/```json\s*/g,'').replace(/```\s*/g,'').trim();
+    let food;
+    try { food = JSON.parse(text); }
+    catch { food = { name: 'Food (estimated)', calories: 200, protein: 15, carbs: 20, fat: 8, serving: '1 serving', confidence: 'low', notes: 'Could not parse AI response — please adjust manually.' }; }
+    showFoodResult(food, 'AI Photo Scan');
+  } catch(err) {
+    hideAIOverlay();
+    console.error('Food scan error:', err);
+    mkModal(`<div class="mt">Scan Failed</div><div style="font-size:14px;color:var(--t2);line-height:1.6;margin-bottom:16px">Could not analyze the image. This may be due to camera permissions or network. Try manual entry instead.</div><div class="row"><button class="sb" onclick="closeMod()">Cancel</button><button class="pb" onclick="closeMod();openManualFood()">Manual Entry</button></div>`);
+  }
 }
 
 // ════════════════════════════════════════════════════════
 // BARCODE SCANNER
 // ════════════════════════════════════════════════════════
-let barcodeActive=false;
-async function openBarcodeScan(){
-  document.getElementById('scan-overlay').style.display='flex';
-  document.getElementById('scan-result-area').innerHTML='';
-  barcodeActive=true;
-  try{
-    await Quagga.init({inputStream:{name:'Live',type:'LiveStream',target:document.getElementById('barcode-scanner'),constraints:{facingMode:'environment'}},decoder:{readers:['ean_reader','upc_reader','upc_e_reader','ean_8_reader','code_128_reader']},locate:true},err=>{
-      if(err){alert('Camera not available for scanning.');closeScan();return;}Quagga.start();
+let barcodeActive = false;
+async function openBarcodeScan() {
+  document.getElementById('scan-overlay').style.display = 'flex';
+  document.getElementById('scan-result-area').innerHTML = '';
+  barcodeActive = true;
+  try {
+    await new Promise((resolve, reject) => {
+      Quagga.init({
+        inputStream: { name: 'Live', type: 'LiveStream', target: document.getElementById('barcode-scanner'), constraints: { facingMode: 'environment' } },
+        decoder: { readers: ['ean_reader','upc_reader','upc_e_reader','ean_8_reader','code_128_reader'] },
+        locate: true
+      }, err => { if (err) reject(err); else resolve(); });
     });
-    Quagga.onDetected(async result=>{
-      if(!barcodeActive)return;const code=result.codeResult.code;barcodeActive=false;Quagga.stop();
-      document.getElementById('scan-result-area').innerHTML=`<div style="background:var(--lime-bg);border:1px solid var(--lime-border);border-radius:var(--rsm);padding:10px 12px;font-size:12px;color:var(--lime);font-family:var(--fm)">Looking up ${code}...</div>`;
-      await lookupBarcode(code);
+    Quagga.start();
+    Quagga.onDetected(async result => {
+      if (!barcodeActive) return;
+      const code = result.codeResult.code;
+      barcodeActive = false;
+      Quagga.stop();
+      document.getElementById('scan-result-area').innerHTML = `<div style="background:var(--lime-bg);border:1px solid var(--lime-border);border-radius:var(--rsm);padding:10px 12px;font-size:12px;color:var(--lime);font-family:var(--fm)">Found: ${code} — looking up...</div>`;
+      setTimeout(() => lookupBarcode(code), 300);
     });
-  }catch(e){alert('Camera not available.');closeScan();}
+  } catch(e) {
+    closeScan();
+    alert('Camera not available for barcode scanning. Please allow camera access.');
+  }
 }
-function closeScan(){barcodeActive=false;try{Quagga.stop()}catch(e){}document.getElementById('scan-overlay').style.display='none';}
 
-async function lookupBarcode(code){
-  try{
-    const res=await fetch(`https://world.openfoodfacts.org/api/v3/product/${code}.json`);
-    const data=await res.json();
-    if(data.status==='success'&&data.product){
-      const p=data.product,n=p.nutriments||{};
-      const food={name:p.product_name||'Scanned Product',calories:Math.round(n['energy-kcal_100g']||n['energy-kcal']||0),
-        protein:Math.round(n.proteins_100g||n.proteins||0),carbs:Math.round(n.carbohydrates_100g||n.carbohydrates||0),
-        fat:Math.round(n.fat_100g||n.fat||0),serving:p.serving_size||'100g',confidence:'high',source:'Open Food Facts'};
-      closeScan();showFoodResult(food,'Barcode: '+code);return;
+function closeScan() {
+  barcodeActive = false;
+  try { Quagga.stop(); } catch(e) {}
+  document.getElementById('scan-overlay').style.display = 'none';
+}
+
+async function lookupBarcode(code) {
+  // First try Open Food Facts (free, no API key needed)
+  try {
+    const res = await fetch('https://world.openfoodfacts.org/api/v3/product/' + code + '.json', { mode: 'cors' });
+    const data = await res.json();
+    if (data.status === 'success' && data.product) {
+      const p = data.product, n = p.nutriments || {};
+      const food = {
+        name: p.product_name || p.generic_name || 'Scanned Product',
+        calories: Math.round(n['energy-kcal_100g'] || n['energy-kcal'] || 0),
+        protein: Math.round((n.proteins_100g || n.proteins || 0) * 10) / 10,
+        carbs: Math.round((n.carbohydrates_100g || n.carbohydrates || 0) * 10) / 10,
+        fat: Math.round((n.fat_100g || n.fat || 0) * 10) / 10,
+        serving: p.serving_size || '100g',
+        confidence: 'high',
+        source: 'Open Food Facts'
+      };
+      closeScan();
+      showFoodResult(food, 'Barcode: ' + code);
+      return;
     }
-  }catch(e){}
-  showAIOverlay('Looking up product...');closeScan();
-  try{
-    const res=await fetch(GURL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:`Barcode: ${code}. Provide nutritional info if you recognize this product. Respond ONLY with JSON: {"name":"product name","calories":000,"protein":00,"carbs":00,"fat":00,"serving":"serving size","confidence":"high/medium/low"}`}]}],generationConfig:{maxOutputTokens:200,temperature:0.1}})});
-    const data=await res.json();hideAIOverlay();
-    const text=data.candidates?.[0]?.content?.parts?.[0]?.text||'{}';
-    let food;try{food=JSON.parse(text.replace(/```json|```/g,'').trim())}catch{food={name:'Product ('+code+')',calories:0,protein:0,carbs:0,fat:0,serving:'1 serving',confidence:'low'}}
-    showFoodResult(food,'Barcode: '+code);
-  }catch(e){hideAIOverlay();openManualFood();}
+  } catch(e) { console.log('Open Food Facts lookup failed:', e); }
+
+  // Fallback: ask Gemini
+  closeScan();
+  showAIOverlay('Looking up product ' + code + '...');
+  try {
+    const data = await callGemini({
+      contents: [{ parts: [{ text: `Product barcode: ${code}. If you recognize this product, provide its nutritional info per typical serving. Respond ONLY with valid JSON (no markdown): {"name":"product name","calories":0,"protein":0,"carbs":0,"fat":0,"serving":"serving size","confidence":"low/medium/high"}. If unknown, use "Unknown Product (${code})" as name with zeros.` }] }],
+      generationConfig: { maxOutputTokens: 200, temperature: 0.1 }
+    });
+    hideAIOverlay();
+    let text = (data.candidates?.[0]?.content?.parts?.[0]?.text || '{}').replace(/```json\s*/g,'').replace(/```\s*/g,'').trim();
+    let food;
+    try { food = JSON.parse(text); } catch { food = { name: 'Product (' + code + ')', calories: 0, protein: 0, carbs: 0, fat: 0, serving: '1 serving', confidence: 'low' }; }
+    showFoodResult(food, 'Barcode: ' + code);
+  } catch(e) {
+    hideAIOverlay();
+    openManualFood();
+  }
 }
 
 // ════════════════════════════════════════════════════════
 // FOOD LOG
 // ════════════════════════════════════════════════════════
-function showFoodResult(food,source){
-  mkModal(`<div class="mt">${escH(food.name)}</div>
+function showFoodResult(food, source) {
+  mkModal(`<div class="mt">${escH(food.name||'Food')}</div>
     <div class="ai-badge">${escH(source)}</div>
     <div class="food-result">
       <div class="fr-macros">
-        <div class="fr-m"><div class="fr-mv" style="color:var(--lime)">${food.calories}</div><div class="fr-ml">kcal</div></div>
-        <div class="fr-m"><div class="fr-mv" style="color:var(--green)">${food.protein}g</div><div class="fr-ml">protein</div></div>
-        <div class="fr-m"><div class="fr-mv" style="color:var(--lime2)">${food.carbs}g</div><div class="fr-ml">carbs</div></div>
-        <div class="fr-m"><div class="fr-mv" style="color:var(--amber)">${food.fat}g</div><div class="fr-ml">fat</div></div>
+        <div class="fr-m"><div class="fr-mv" style="color:var(--lime)">${food.calories||0}</div><div class="fr-ml">kcal</div></div>
+        <div class="fr-m"><div class="fr-mv" style="color:var(--green)">${food.protein||0}g</div><div class="fr-ml">protein</div></div>
+        <div class="fr-m"><div class="fr-mv" style="color:var(--lime2)">${food.carbs||0}g</div><div class="fr-ml">carbs</div></div>
+        <div class="fr-m"><div class="fr-mv" style="color:var(--amber)">${food.fat||0}g</div><div class="fr-ml">fat</div></div>
       </div>
-      ${food.serving?'<div style="font-size:11px;color:var(--t2);margin-top:8px;font-family:var(--fm)">Serving: '+escH(food.serving)+'</div>':''}
-      ${food.notes?'<div style="font-size:11px;color:var(--t3);margin-top:4px">'+escH(food.notes)+'</div>':''}
+      ${food.serving ? '<div style="font-size:11px;color:var(--t2);margin-top:8px;font-family:var(--fm)">Serving: ' + escH(food.serving) + '</div>' : ''}
+      ${food.notes ? '<div style="font-size:11px;color:var(--t3);margin-top:4px">' + escH(food.notes) + '</div>' : ''}
     </div>
-    <div class="fl"><label class="fl-l" for="fr-name">Adjust Name</label><input type="text" class="fi" id="fr-name" value="${escH(food.name)}"></div>
+    <div class="fl"><label class="fl-l" for="fr-name">Name</label><input type="text" class="fi" id="fr-name" value="${escH(food.name||'')}"></div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">
-      <div><label class="fl-l" for="fr-cal">Calories</label><input type="number" class="fi" id="fr-cal" value="${food.calories}"></div>
-      <div><label class="fl-l" for="fr-p">Protein (g)</label><input type="number" class="fi" id="fr-p" value="${food.protein}"></div>
-      <div><label class="fl-l" for="fr-c">Carbs (g)</label><input type="number" class="fi" id="fr-c" value="${food.carbs}"></div>
-      <div><label class="fl-l" for="fr-f">Fat (g)</label><input type="number" class="fi" id="fr-f" value="${food.fat}"></div>
+      <div><label class="fl-l" for="fr-cal">Calories</label><input type="number" class="fi" id="fr-cal" value="${food.calories||0}" inputmode="numeric"></div>
+      <div><label class="fl-l" for="fr-p">Protein (g)</label><input type="number" class="fi" id="fr-p" value="${food.protein||0}" inputmode="decimal"></div>
+      <div><label class="fl-l" for="fr-c">Carbs (g)</label><input type="number" class="fi" id="fr-c" value="${food.carbs||0}" inputmode="decimal"></div>
+      <div><label class="fl-l" for="fr-f">Fat (g)</label><input type="number" class="fi" id="fr-f" value="${food.fat||0}" inputmode="decimal"></div>
     </div>
     <div class="row"><button class="sb" onclick="closeMod()">Cancel</button><button class="pb" onclick="logFoodFromResult()">Log This Food</button></div>`);
 }
-function logFoodFromResult(){
-  const entry={name:document.getElementById('fr-name').value||'Food',cal:parseInt(document.getElementById('fr-cal').value)||0,protein:parseInt(document.getElementById('fr-p').value)||0,carbs:parseInt(document.getElementById('fr-c').value)||0,fat:parseInt(document.getElementById('fr-f').value)||0,time:Date.now()};
-  const t=new Date().toDateString();const log=sg('food_'+APP.user.email+'_'+t)||[];log.push(entry);ss('food_'+APP.user.email+'_'+t,log);closeMod();renderNutrition();
+
+function logFoodFromResult() {
+  const entry = { name: document.getElementById('fr-name').value || 'Food', cal: parseInt(document.getElementById('fr-cal').value)||0, protein: parseInt(document.getElementById('fr-p').value)||0, carbs: parseInt(document.getElementById('fr-c').value)||0, fat: parseInt(document.getElementById('fr-f').value)||0, time: Date.now() };
+  const t = new Date().toDateString(); const log = sg('food_' + APP.user.email + '_' + t) || [];
+  log.push(entry); ss('food_' + APP.user.email + '_' + t, log); closeMod(); renderNutrition();
 }
-function openManualFood(){
+
+function openManualFood() {
   mkModal(`<div class="mt">Log Food</div>
     <div class="fl"><label class="fl-l" for="fm-n">Food / Meal Name</label><input type="text" class="fi" id="fm-n" placeholder="e.g. Chicken breast 200g..."></div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">
-      <div><label class="fl-l" for="fm-cal">Calories</label><input type="number" class="fi" id="fm-cal" placeholder="300"></div>
-      <div><label class="fl-l" for="fm-p">Protein (g)</label><input type="number" class="fi" id="fm-p" placeholder="30"></div>
-      <div><label class="fl-l" for="fm-c">Carbs (g)</label><input type="number" class="fi" id="fm-c" placeholder="20"></div>
-      <div><label class="fl-l" for="fm-f">Fat (g)</label><input type="number" class="fi" id="fm-f" placeholder="10"></div>
+      <div><label class="fl-l" for="fm-cal">Calories</label><input type="number" class="fi" id="fm-cal" placeholder="300" inputmode="numeric"></div>
+      <div><label class="fl-l" for="fm-p">Protein (g)</label><input type="number" class="fi" id="fm-p" placeholder="30" inputmode="decimal"></div>
+      <div><label class="fl-l" for="fm-c">Carbs (g)</label><input type="number" class="fi" id="fm-c" placeholder="20" inputmode="decimal"></div>
+      <div><label class="fl-l" for="fm-f">Fat (g)</label><input type="number" class="fi" id="fm-f" placeholder="10" inputmode="decimal"></div>
     </div>
     <div class="row"><button class="sb" onclick="closeMod()">Cancel</button><button class="pb" onclick="saveManualFood()">Log</button></div>`);
 }
-function saveManualFood(){
-  const name=document.getElementById('fm-n').value.trim();if(!name)return;
-  const entry={name,cal:parseInt(document.getElementById('fm-cal').value)||0,protein:parseInt(document.getElementById('fm-p').value)||0,carbs:parseInt(document.getElementById('fm-c').value)||0,fat:parseInt(document.getElementById('fm-f').value)||0,time:Date.now()};
-  const t=new Date().toDateString();const log=sg('food_'+APP.user.email+'_'+t)||[];log.push(entry);ss('food_'+APP.user.email+'_'+t,log);closeMod();renderNutrition();
+
+function saveManualFood() {
+  const name = document.getElementById('fm-n').value.trim(); if (!name) return;
+  const entry = { name, cal: parseInt(document.getElementById('fm-cal').value)||0, protein: parseInt(document.getElementById('fm-p').value)||0, carbs: parseInt(document.getElementById('fm-c').value)||0, fat: parseInt(document.getElementById('fm-f').value)||0, time: Date.now() };
+  const t = new Date().toDateString(); const log = sg('food_' + APP.user.email + '_' + t) || [];
+  log.push(entry); ss('food_' + APP.user.email + '_' + t, log); closeMod(); renderNutrition();
 }
-const delFood=i=>{const t=new Date().toDateString();const log=sg('food_'+APP.user.email+'_'+t)||[];log.splice(i,1);ss('food_'+APP.user.email+'_'+t,log);renderNutrition()};
-const showAIOverlay=msg=>{const el=document.getElementById('ai-overlay');document.getElementById('ai-ov-msg').textContent=msg||'Analyzing...';el.style.display='flex'};
-const hideAIOverlay=()=>{document.getElementById('ai-overlay').style.display='none'};
+
+const delFood = i => { const t = new Date().toDateString(); const log = sg('food_' + APP.user.email + '_' + t) || []; log.splice(i, 1); ss('food_' + APP.user.email + '_' + t, log); renderNutrition(); };
+const showAIOverlay = msg => { document.getElementById('ai-ov-msg').textContent = msg || 'Analyzing...'; document.getElementById('ai-overlay').style.display = 'flex'; };
+const hideAIOverlay = () => { document.getElementById('ai-overlay').style.display = 'none'; };
 
 // ════════════════════════════════════════════════════════
 // NUTRITION RENDER
 // ════════════════════════════════════════════════════════
-function renderNutrition(){
-  const u=APP.user;const today=new Date().toDateString();
-  const fLog=sg('food_'+u.email+'_'+today)||[];
-  const calTarget=parseInt(u.body&&u.body.calTarget)||2000;
-  let totalCal=0,totalP=0,totalC=0,totalF=0;
-  fLog.forEach(f=>{totalCal+=f.cal||0;totalP+=f.protein||0;totalC+=f.carbs||0;totalF+=f.fat||0});
-  const pct=Math.min(100,Math.round(totalCal/calTarget*100));
-  document.getElementById('cal-pct-badge').textContent=pct+'%';
-  document.getElementById('ring-cal-num').textContent=totalCal;
-  document.getElementById('val-p').textContent=totalP+'g';
-  document.getElementById('val-c').textContent=totalC+'g';
-  document.getElementById('val-f').textContent=totalF+'g';
-  document.getElementById('val-rem').textContent=Math.max(0,calTarget-totalCal)+' kcal';
-  const pTarget=Math.round(calTarget*0.3/4),cTarget=Math.round(calTarget*0.45/4),fTarget=Math.round(calTarget*0.25/9);
-  document.getElementById('bar-p').style.width=Math.min(100,totalP/pTarget*100)+'%';
-  document.getElementById('bar-c').style.width=Math.min(100,totalC/cTarget*100)+'%';
-  document.getElementById('bar-f').style.width=Math.min(100,totalF/fTarget*100)+'%';
-  const circumference=2*Math.PI*38;
-  const pA=Math.min(totalP*4/calTarget*circumference,circumference);
-  const cA=Math.min(totalC*4/calTarget*circumference,circumference-pA);
-  const fA=Math.min(totalF*9/calTarget*circumference,circumference-pA-cA);
-  document.getElementById('ring-protein').setAttribute('stroke-dasharray',pA+' '+circumference);
-  document.getElementById('ring-carbs').setAttribute('stroke-dasharray',cA+' '+circumference);
-  document.getElementById('ring-carbs').setAttribute('stroke-dashoffset',-pA);
-  document.getElementById('ring-fat').setAttribute('stroke-dasharray',fA+' '+circumference);
-  document.getElementById('ring-fat').setAttribute('stroke-dashoffset',-(pA+cA));
+function renderNutrition() {
+  const u = APP.user; const today = new Date().toDateString();
+  const fLog = sg('food_' + u.email + '_' + today) || [];
+  const calTarget = parseInt(u.body && u.body.calTarget) || 2000;
+  let totalCal = 0, totalP = 0, totalC = 0, totalF = 0;
+  fLog.forEach(f => { totalCal += f.cal||0; totalP += f.protein||0; totalC += f.carbs||0; totalF += f.fat||0; });
+  const pct = Math.min(100, Math.round(totalCal / calTarget * 100));
+  document.getElementById('cal-pct-badge').textContent = pct + '%';
+  document.getElementById('ring-cal-num').textContent = totalCal;
+  document.getElementById('val-p').textContent = totalP + 'g';
+  document.getElementById('val-c').textContent = totalC + 'g';
+  document.getElementById('val-f').textContent = totalF + 'g';
+  document.getElementById('val-rem').textContent = Math.max(0, calTarget - totalCal) + ' kcal';
+  const pTarget = Math.round(calTarget * 0.3 / 4), cTarget = Math.round(calTarget * 0.45 / 4), fTarget = Math.round(calTarget * 0.25 / 9);
+  document.getElementById('bar-p').style.width = Math.min(100, totalP / pTarget * 100) + '%';
+  document.getElementById('bar-c').style.width = Math.min(100, totalC / cTarget * 100) + '%';
+  document.getElementById('bar-f').style.width = Math.min(100, totalF / fTarget * 100) + '%';
+  const circumference = 2 * Math.PI * 38;
+  const pA = Math.min(totalP * 4 / calTarget * circumference, circumference);
+  const cA = Math.min(totalC * 4 / calTarget * circumference, circumference - pA);
+  const fA = Math.min(totalF * 9 / calTarget * circumference, circumference - pA - cA);
+  document.getElementById('ring-protein').setAttribute('stroke-dasharray', pA + ' ' + circumference);
+  document.getElementById('ring-carbs').setAttribute('stroke-dasharray', cA + ' ' + circumference);
+  document.getElementById('ring-carbs').setAttribute('stroke-dashoffset', -pA);
+  document.getElementById('ring-fat').setAttribute('stroke-dasharray', fA + ' ' + circumference);
+  document.getElementById('ring-fat').setAttribute('stroke-dashoffset', -(pA + cA));
 
-  const fll=document.getElementById('food-log-list');
-  fll.innerHTML=fLog.length===0
-    ?'<div style="font-size:12px;color:var(--t3);font-family:var(--fm);padding:14px 0;text-align:center">No food logged today. Use the buttons above.</div>'
-    :fLog.map((f,i)=>`<div class="li">
-      <div class="li-badge" style="color:var(--lime)">FOOD</div>
-      <div style="flex:1"><div class="li-n">${escH(f.name)}</div><div class="li-v">${f.cal} kcal &nbsp; P:${f.protein}g &nbsp; C:${f.carbs}g &nbsp; F:${f.fat}g</div></div>
-      <button class="li-d" onclick="delFood(${i})" aria-label="Delete ${escH(f.name)}">
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1 1l12 12M13 1L1 13" stroke-width="1.5" stroke-linecap="round"/></svg>
-      </button></div>`).join('');
+  const fll = document.getElementById('food-log-list');
+  fll.innerHTML = fLog.length === 0
+    ? '<div style="font-size:12px;color:var(--t3);font-family:var(--fm);padding:14px 0;text-align:center">No food logged today. Use the buttons above.</div>'
+    : fLog.map((f, i) => `<div class="li">
+        <div class="li-badge" style="color:var(--lime)">FOOD</div>
+        <div style="flex:1"><div class="li-n">${escH(f.name)}</div><div class="li-v">${f.cal} kcal &nbsp; P:${f.protein}g &nbsp; C:${f.carbs}g &nbsp; F:${f.fat}g</div></div>
+        <button class="li-d" onclick="delFood(${i})">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1 1l12 12M13 1L1 13" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </button></div>`).join('');
 
-  // Weight
-  const wLog=sg('wt_log_'+u.email)||[];const wUnit=u.body&&u.body.weightUnit||'lbs';
-  const curW=wLog.length?wLog[wLog.length-1].v:'--';const goalW=u.body&&u.body.goalWeight||'--';
-  document.getElementById('cur-wt').textContent=curW;document.getElementById('wt-unit-d').textContent=wUnit;
-  document.getElementById('goal-wt').textContent=goalW||'--';document.getElementById('gw-unit-d').textContent=wUnit;
-  if(wLog.length>1){const diff=(parseFloat(wLog[wLog.length-1].v)-parseFloat(wLog[wLog.length-2].v)).toFixed(1);const el=document.getElementById('wt-ch');el.textContent=(diff>0?'+':'')+diff+' since last';el.className='mc-ch '+(parseFloat(diff)>0?'up':'dn');}
-  if(goalW&&goalW!=='--'&&curW!=='--'){const d=(parseFloat(curW)-parseFloat(goalW)).toFixed(1);const el=document.getElementById('gw-diff');el.textContent=parseFloat(d)>0?d+' to lose':Math.abs(d)+' to goal';el.className='mc-ch '+(parseFloat(d)>0?'up':'dn');}
-
-  // Weight sparkline
-  if(wLog.length>=2){
-    document.getElementById('wt-chart-card').style.display='block';renderSparkline(wLog);
-  }
-  document.getElementById('wt-log-list').innerHTML=wLog.slice(-3).reverse().map((e,i,arr)=>`
+  const wLog = sg('wt_log_' + u.email) || []; const wUnit = u.body && u.body.weightUnit || 'lbs';
+  const curW = wLog.length ? wLog[wLog.length-1].v : '--'; const goalW = u.body && u.body.goalWeight || '--';
+  document.getElementById('cur-wt').textContent = curW; document.getElementById('wt-unit-d').textContent = wUnit;
+  document.getElementById('goal-wt').textContent = goalW || '--'; document.getElementById('gw-unit-d').textContent = wUnit;
+  if (wLog.length > 1) { const diff = (parseFloat(wLog[wLog.length-1].v) - parseFloat(wLog[wLog.length-2].v)).toFixed(1); const el = document.getElementById('wt-ch'); el.textContent = (diff > 0 ? '+' : '') + diff + ' since last'; el.className = 'mc-ch ' + (parseFloat(diff) > 0 ? 'up' : 'dn'); }
+  if (goalW && goalW !== '--' && curW !== '--') { const d = (parseFloat(curW) - parseFloat(goalW)).toFixed(1); const el = document.getElementById('gw-diff'); el.textContent = parseFloat(d) > 0 ? d + ' to lose' : Math.abs(d) + ' to goal'; el.className = 'mc-ch ' + (parseFloat(d) > 0 ? 'up' : 'dn'); }
+  if (wLog.length >= 2) { document.getElementById('wt-chart-card').style.display = 'block'; renderSparkline(wLog); }
+  document.getElementById('wt-log-list').innerHTML = wLog.slice(-3).reverse().map((e, i) => `
     <div class="li">
       <div class="li-badge" style="color:var(--blue)">WT</div>
-      <div style="flex:1"><div class="li-n">${e.v} ${wUnit}</div><div class="li-v">${new Date(e.date).toLocaleDateString()}${e.notes?' \u2014 '+escH(e.notes):''}</div></div>
-      <button class="li-d" onclick="delWt(${wLog.length-1-i})" aria-label="Delete weight entry">
+      <div style="flex:1"><div class="li-n">${e.v} ${wUnit}</div><div class="li-v">${new Date(e.date).toLocaleDateString()}${e.notes?' — '+escH(e.notes):''}</div></div>
+      <button class="li-d" onclick="delWt(${wLog.length-1-i})">
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1 1l12 12M13 1L1 13" stroke-width="1.5" stroke-linecap="round"/></svg>
       </button></div>`).join('');
-
-  // Body measurements
-  const bm=u.bodyMeasurements||{};
-  ['chest','waist','hips','arms'].forEach(k=>{const el=document.getElementById('bm-'+k);if(el)el.textContent=bm[k]||'--'});
+  const bm = u.bodyMeasurements || {};
+  ['chest','waist','hips','arms'].forEach(k => { const el = document.getElementById('bm-'+k); if (el) el.textContent = bm[k] || '--'; });
 }
 
-function renderSparkline(wLog){
-  const svg=document.getElementById('wt-spark');if(!svg)return;
-  const vals=wLog.map(e=>parseFloat(e.v)).filter(v=>!isNaN(v));
-  if(vals.length<2)return;
-  const W=svg.clientWidth||300,H=48;
-  const mn=Math.min(...vals)-1,mx=Math.max(...vals)+1;
-  const pts=vals.map((v,i)=>`${(i/(vals.length-1))*W},${H-((v-mn)/(mx-mn))*H}`).join(' ');
-  svg.innerHTML=`
-    <polyline points="${pts}" fill="none" stroke="var(--lime)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-    <polyline points="0,${H} ${pts} ${W},${H}" fill="url(#sparkgrad)" stroke="none"/>
+function renderSparkline(wLog) {
+  const svg = document.getElementById('wt-spark'); if (!svg) return;
+  const vals = wLog.map(e => parseFloat(e.v)).filter(v => !isNaN(v));
+  if (vals.length < 2) return;
+  const W = svg.clientWidth || 300, H = 48;
+  const mn = Math.min(...vals) - 1, mx = Math.max(...vals) + 1;
+  const pts = vals.map((v, i) => `${(i / (vals.length-1)) * W},${H - ((v-mn) / (mx-mn)) * H}`).join(' ');
+  svg.innerHTML = `
     <defs><linearGradient id="sparkgrad" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="var(--lime)" stop-opacity="0.2"/><stop offset="100%" stop-color="var(--lime)" stop-opacity="0"/></linearGradient></defs>
-    ${vals.map((v,i)=>`<circle cx="${(i/(vals.length-1))*W}" cy="${H-((v-mn)/(mx-mn))*H}" r="3" fill="var(--lime)"/>`).join('')}`;
+    <polyline points="0,${H} ${pts} ${W},${H}" fill="url(#sparkgrad)" stroke="none"/>
+    <polyline points="${pts}" fill="none" stroke="var(--lime)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    ${vals.map((v, i) => `<circle cx="${(i/(vals.length-1))*W}" cy="${H-((v-mn)/(mx-mn))*H}" r="3" fill="var(--lime)"/>`).join('')}`;
 }
 
-const delWt=i=>{const log=sg('wt_log_'+APP.user.email)||[];log.splice(i,1);ss('wt_log_'+APP.user.email,log);renderNutrition()};
+const delWt = i => { const log = sg('wt_log_' + APP.user.email) || []; log.splice(i, 1); ss('wt_log_' + APP.user.email, log); renderNutrition(); };
 
-function openWeightModal(){
-  const wUnit=APP.user.body&&APP.user.body.weightUnit||'lbs';
+function openWeightModal() {
+  const wUnit = APP.user.body && APP.user.body.weightUnit || 'lbs';
   mkModal(`<div class="mt">Log Weight</div>
     <div class="fl"><label class="fl-l" for="m-wt">Weight (${wUnit})</label><input type="number" class="fi" id="m-wt" placeholder="175" step="0.1" inputmode="decimal"></div>
     <div class="fl"><label class="fl-l" for="m-wtn">Notes (optional)</label><input type="text" class="fi" id="m-wtn" placeholder="Morning weight, post-workout..."></div>
     <div class="row"><button class="sb" onclick="closeMod()">Cancel</button><button class="pb" onclick="saveWt()">Save</button></div>`);
 }
-function saveWt(){
-  const v=parseFloat(document.getElementById('m-wt').value);if(!v)return;
-  const log=sg('wt_log_'+APP.user.email)||[];log.push({v,date:Date.now(),notes:document.getElementById('m-wtn').value});
-  ss('wt_log_'+APP.user.email,log);closeMod();renderNutrition();
+function saveWt() {
+  const v = parseFloat(document.getElementById('m-wt').value); if (!v) return;
+  const log = sg('wt_log_' + APP.user.email) || []; log.push({ v, date: Date.now(), notes: document.getElementById('m-wtn').value });
+  ss('wt_log_' + APP.user.email, log); closeMod(); renderNutrition();
 }
-function openBodyModal(){
-  const bm=APP.user.bodyMeasurements||{};
+function openBodyModal() {
+  const bm = APP.user.bodyMeasurements || {};
   mkModal(`<div class="mt">Measurements</div>
     <div class="fl"><label class="fl-l" for="bv-chest">Chest (in)</label><input type="number" class="fi" id="bv-chest" value="${escH(bm.chest||'')}" placeholder="42" step="0.25" inputmode="decimal"></div>
     <div class="fl"><label class="fl-l" for="bv-waist">Waist (in)</label><input type="number" class="fi" id="bv-waist" value="${escH(bm.waist||'')}" placeholder="34" step="0.25" inputmode="decimal"></div>
@@ -1422,12 +1538,12 @@ function openBodyModal(){
     <div class="fl"><label class="fl-l" for="bv-arms">Arms (in)</label><input type="number" class="fi" id="bv-arms" value="${escH(bm.arms||'')}" placeholder="15" step="0.25" inputmode="decimal"></div>
     <div class="row"><button class="sb" onclick="closeMod()">Cancel</button><button class="pb" onclick="saveBody()">Save</button></div>`);
 }
-function saveBody(){
-  const bm={chest:document.getElementById('bv-chest').value,waist:document.getElementById('bv-waist').value,hips:document.getElementById('bv-hips').value,arms:document.getElementById('bv-arms').value};
-  const users=getUsers();users[APP.user.email]={...APP.user,bodyMeasurements:bm};saveUsers(users);APP.user=users[APP.user.email];closeMod();renderNutrition();
+function saveBody() {
+  const bm = { chest: document.getElementById('bv-chest').value, waist: document.getElementById('bv-waist').value, hips: document.getElementById('bv-hips').value, arms: document.getElementById('bv-arms').value };
+  const users = getUsers(); users[APP.user.email] = { ...APP.user, bodyMeasurements: bm }; saveUsers(users); APP.user = users[APP.user.email]; closeMod(); renderNutrition();
 }
-function openBodyStatsModal(){
-  const b=APP.user.body||{};
+function openBodyStatsModal() {
+  const b = APP.user.body || {};
   mkModal(`<div class="mt">Body Stats</div>
     <div class="fl"><label class="fl-l">Weight</label><div class="row"><input type="number" class="fi" id="bs-wt" value="${escH(b.weight||'')}" placeholder="175" style="flex:2" inputmode="decimal"><select class="fi" id="bs-wu" style="flex:1"><option value="lbs"${b.weightUnit==='lbs'?' selected':''}>lbs</option><option value="kg"${b.weightUnit==='kg'?' selected':''}>kg</option></select></div></div>
     <div class="fl"><label class="fl-l" for="bs-gw">Goal Weight</label><input type="number" class="fi" id="bs-gw" value="${escH(b.goalWeight||'')}" placeholder="160" inputmode="decimal"></div>
@@ -1435,25 +1551,25 @@ function openBodyStatsModal(){
     <div class="fl"><label class="fl-l" for="bs-age">Age</label><input type="number" class="fi" id="bs-age" value="${escH(b.age||'')}" placeholder="25" inputmode="numeric"></div>
     <div class="row mt8"><button class="sb" onclick="closeMod()">Cancel</button><button class="pb" onclick="saveBS()">Save</button></div>`);
 }
-function saveBS(){
-  const b={...APP.user.body,weight:document.getElementById('bs-wt').value,weightUnit:document.getElementById('bs-wu').value,goalWeight:document.getElementById('bs-gw').value,calTarget:document.getElementById('bs-cal').value,age:document.getElementById('bs-age').value};
-  const users=getUsers();users[APP.user.email]={...APP.user,body:b};saveUsers(users);APP.user=users[APP.user.email];closeMod();renderNutrition();
+function saveBS() {
+  const b = { ...APP.user.body, weight: document.getElementById('bs-wt').value, weightUnit: document.getElementById('bs-wu').value, goalWeight: document.getElementById('bs-gw').value, calTarget: document.getElementById('bs-cal').value, age: document.getElementById('bs-age').value };
+  const users = getUsers(); users[APP.user.email] = { ...APP.user, body: b }; saveUsers(users); APP.user = users[APP.user.email]; closeMod(); renderNutrition();
 }
 
 // ════════════════════════════════════════════════════════
 // PERSONAL RECORDS
 // ════════════════════════════════════════════════════════
-function renderPRs(){
-  const prs=sg('prs_'+APP.user.email)||[];
-  const el=document.getElementById('pr-list');if(!el)return;
-  if(prs.length===0){el.innerHTML='<div style="font-size:12px;color:var(--t3);font-family:var(--fm);padding:14px 16px">No PRs logged yet. Log your first record.</div>';return;}
-  el.innerHTML=prs.map((pr,i)=>`
+function renderPRs() {
+  const prs = sg('prs_' + APP.user.email) || [];
+  const el = document.getElementById('pr-list'); if (!el) return;
+  if (prs.length === 0) { el.innerHTML = '<div style="font-size:12px;color:var(--t3);font-family:var(--fm);padding:14px 16px">No PRs logged yet.</div>'; return; }
+  el.innerHTML = prs.map((pr, i) => `
     <div class="pr-row">
-      <div style="flex:1"><div class="pr-n">${escH(pr.ex)}</div><div class="pr-d">${new Date(pr.date).toLocaleDateString()}${pr.notes?' \u2014 '+escH(pr.notes):''}</div></div>
+      <div style="flex:1"><div class="pr-n">${escH(pr.ex)}</div><div class="pr-d">${new Date(pr.date).toLocaleDateString()}${pr.notes?' — '+escH(pr.notes):''}</div></div>
       <div style="text-align:right"><div class="pr-v">${pr.val}</div><div class="pr-u">${escH(pr.unit)}</div></div>
     </div>`).join('');
 }
-function openPRModal(){
+function openPRModal() {
   mkModal(`<div class="mt">Log PR</div>
     <div class="fl"><label class="fl-l" for="pr-ex">Exercise</label><input type="text" class="fi" id="pr-ex" placeholder="e.g. Bench Press, Squat..."></div>
     <div class="row">
@@ -1463,158 +1579,180 @@ function openPRModal(){
     <div class="fl mt8"><label class="fl-l" for="pr-notes">Notes (optional)</label><input type="text" class="fi" id="pr-notes" placeholder="1RM, 5RM, technique notes..."></div>
     <div class="row"><button class="sb" onclick="closeMod()">Cancel</button><button class="pb" onclick="savePR()">Save PR</button></div>`);
 }
-function savePR(){
-  const ex=document.getElementById('pr-ex').value.trim();const val=document.getElementById('pr-val').value;
-  if(!ex||!val)return;
-  const prs=sg('prs_'+APP.user.email)||[];
-  prs.push({ex,val:parseFloat(val),unit:document.getElementById('pr-unit').value,notes:document.getElementById('pr-notes').value,date:Date.now()});
-  prs.sort((a,b)=>a.ex.localeCompare(b.ex));
-  ss('prs_'+APP.user.email,prs);closeMod();renderPRs();
+function savePR() {
+  const ex = document.getElementById('pr-ex').value.trim(); const val = document.getElementById('pr-val').value;
+  if (!ex || !val) return;
+  const prs = sg('prs_' + APP.user.email) || [];
+  prs.push({ ex, val: parseFloat(val), unit: document.getElementById('pr-unit').value, notes: document.getElementById('pr-notes').value, date: Date.now() });
+  prs.sort((a, b) => a.ex.localeCompare(b.ex));
+  ss('prs_' + APP.user.email, prs); closeMod(); renderPRs();
 }
 
 // ════════════════════════════════════════════════════════
 // PROFILE
 // ════════════════════════════════════════════════════════
-function renderProfile(){
-  const u=APP.user;
-  document.getElementById('pn').textContent=u.name;
-  document.getElementById('s-email').textContent=u.email;
-  document.getElementById('s-phone').textContent=u.phone||'Not set';
-  document.getElementById('s-wk').textContent=APP.workouts;document.getElementById('s-sk').textContent=APP.streak;
-  document.getElementById('s-ci').textContent=APP.checkins;document.getElementById('s-ww').textContent=Math.min(APP.workouts,7);
-  const n=u.notifications||{};
-  document.getElementById('p-tog-w').classList.toggle('on',!!n.workout);document.getElementById('p-tog-c').classList.toggle('on',!!n.ci);
-  document.getElementById('p-wr').textContent=n.workout?(n.workoutTime||'07:30')+' daily':'Disabled';
-  document.getElementById('p-cr').textContent=n.ci?(n.ciTime||'20:00')+' daily':'Disabled';
-  const sp=getActiveSplit();document.getElementById('psub').textContent=sp.name;
-  document.getElementById('s-split').textContent=APP.split==='custom'?'Custom':sp.name;
+function renderProfile() {
+  const u = APP.user;
+  document.getElementById('pn').textContent = u.name;
+  document.getElementById('s-email').textContent = u.email;
+  document.getElementById('s-wk').textContent = APP.workouts;
+  document.getElementById('s-sk').textContent = APP.streak;
+  document.getElementById('s-ci').textContent = APP.checkins;
+  document.getElementById('s-ww').textContent = Math.min(APP.workouts, 7);
+  const n = u.notifications || {};
+  const wOn = !!n.workout, cOn = !!n.ci;
+  document.getElementById('p-tog-w').classList.toggle('on', wOn);
+  document.getElementById('p-tog-c').classList.toggle('on', cOn);
+  document.getElementById('ptr-w').classList.toggle('vis', wOn);
+  document.getElementById('ptr-c').classList.toggle('vis', cOn);
+  if (document.getElementById('pt-w')) document.getElementById('pt-w').value = n.workoutTime || '07:30';
+  if (document.getElementById('pt-c')) document.getElementById('pt-c').value = n.ciTime || '20:00';
+  document.getElementById('p-wr').textContent = wOn ? (n.workoutTime || '07:30') + ' daily' : 'Disabled';
+  document.getElementById('p-cr').textContent = cOn ? (n.ciTime || '20:00') + ' daily' : 'Disabled';
+  const sp = getActiveSplit();
+  document.getElementById('psub').textContent = sp.name;
+  document.getElementById('s-split').textContent = APP.split === 'custom' ? 'Custom' : sp.name;
 }
 
 // ════════════════════════════════════════════════════════
-// AI COACH — GEMINI WITH FULL CONTEXT
+// AI COACH — GEMINI with full context
 // ════════════════════════════════════════════════════════
-function buildCtx(){
-  const u=APP.user;if(!u)return'';
-  const sp=getActiveSplit();const today=sp.days[APP.todayIdx%sp.days.length];
-  const wLog=sg('wt_log_'+u.email)||[];const curW=wLog.length?wLog[wLog.length-1].v+' '+(u.body&&u.body.weightUnit||'lbs'):'unknown';
-  const todayFoods=sg('food_'+u.email+'_'+new Date().toDateString())||[];
-  const totalCal=todayFoods.reduce((a,f)=>a+(f.cal||0),0);const totalP=todayFoods.reduce((a,f)=>a+(f.protein||0),0);
-  const totalC=todayFoods.reduce((a,f)=>a+(f.carbs||0),0);const totalF=todayFoods.reduce((a,f)=>a+(f.fat||0),0);
-  const bm=u.bodyMeasurements||{};const b=u.body||{};
-  const recentW=wLog.slice(-5).map(e=>e.v).join(', ');
-  const ciLog=sg('ci_log_'+u.email)||[];const lastCI=ciLog.length?ciLog[ciLog.length-1]:{};
-  const prs=sg('prs_'+u.email)||[];const prStr=prs.slice(-5).map(p=>p.ex+': '+p.val+p.unit).join(', ');
-  const water=sg('water_'+u.email+'_'+new Date().toDateString())||0;
-  return `You are the KitoFit AI Coach — an elite personal trainer, nutritionist, and strength coach. You have complete access to this client's profile and data. Be direct, evidence-based, motivating, and genuinely personal. Use their first name occasionally.
+function buildCtx() {
+  const u = APP.user; if (!u) return '';
+  const sp = getActiveSplit(); const today = sp.days[APP.todayIdx % sp.days.length];
+  const wLog = sg('wt_log_' + u.email) || []; const curW = wLog.length ? wLog[wLog.length-1].v + ' ' + (u.body && u.body.weightUnit || 'lbs') : 'unknown';
+  const todayFoods = sg('food_' + u.email + '_' + new Date().toDateString()) || [];
+  const totalCal = todayFoods.reduce((a, f) => a + (f.cal||0), 0);
+  const totalP = todayFoods.reduce((a, f) => a + (f.protein||0), 0);
+  const totalC = todayFoods.reduce((a, f) => a + (f.carbs||0), 0);
+  const totalF = todayFoods.reduce((a, f) => a + (f.fat||0), 0);
+  const bm = u.bodyMeasurements || {}; const b = u.body || {};
+  const recentW = wLog.slice(-5).map(e => e.v).join(', ');
+  const ciLog = sg('ci_log_' + u.email) || []; const lastCI = ciLog.length ? ciLog[ciLog.length-1] : {};
+  const prs = sg('prs_' + u.email) || []; const prStr = prs.slice(-5).map(p => p.ex + ': ' + p.val + p.unit).join(', ');
+  return `You are the KitoFit AI Coach — an elite personal trainer, nutritionist, and strength coach. You have complete access to this client's profile and real data. Be direct, evidence-based, motivating, and genuinely personal. Use their first name occasionally.
 
-CLIENT PROFILE:
-Name: ${u.name} | Age: ${b.age||'?'} | Sex: ${b.sex||'?'} | Experience: ${u.experience||'intermediate'}
+CLIENT: ${u.name} | Age: ${b.age||'?'} | Sex: ${b.sex||'?'} | Experience: ${u.experience||'intermediate'}
 Goals: ${(u.goals||[]).join(', ')||'general fitness'}
 
-BODY DATA:
-Current weight: ${curW} | Goal: ${b.goalWeight||'not set'} ${b.weightUnit||'lbs'}
-Height: ${b.height||'?'} ${b.heightUnit||'cm'} | Calorie target: ${b.calTarget||'2000'} kcal/day
+BODY: Weight: ${curW} | Goal: ${b.goalWeight||'not set'} ${b.weightUnit||'lbs'} | Height: ${b.height||'?'} ${b.heightUnit||'cm'} | Calories/day: ${b.calTarget||'2000'}
 Weight history (last 5): ${recentW||'none logged'}
 Measurements: Chest ${bm.chest||'?'}in, Waist ${bm.waist||'?'}in, Hips ${bm.hips||'?'}in, Arms ${bm.arms||'?'}in
 
-TRAINING:
-Program: ${sp.name} (${sp.freq})
-Today (Day ${APP.todayIdx+1}): ${today.name}${today.tag!=='rest'&&today.ex.length?' — '+today.ex.slice(0,5).map(e=>e.n).join(', ')+(today.ex.length>5?' +more':''):''}
-Workout streak: ${APP.streak} days | Total logged: ${APP.workouts} workouts
-Recent PRs: ${prStr||'none logged'}
+TRAINING: Program: ${sp.name} (${sp.freq})
+Today: ${today.name}${today.tag!=='rest'&&today.ex.length?' — '+today.ex.slice(0,5).map(e=>e.n).join(', ')+(today.ex.length>5?' +more':''):''}
+Streak: ${APP.streak} days | Total workouts: ${APP.workouts}
+PRs: ${prStr||'none logged'}
 
-TODAY'S NUTRITION:
-Consumed: ${totalCal} kcal (P:${totalP}g C:${totalC}g F:${totalF}g)
-Target: ${b.calTarget||'not set'} kcal/day | Remaining: ${Math.max(0,parseInt(b.calTarget||2000)-totalCal)} kcal
-Water: ${water}/8 glasses
-Foods logged: ${todayFoods.map(f=>f.name+'('+f.cal+'kcal)').join('; ')||'none yet'}
+TODAY'S NUTRITION: ${totalCal} kcal (P:${totalP}g C:${totalC}g F:${totalF}g) | Target: ${b.calTarget||2000} kcal/day
+Foods: ${todayFoods.map(f=>f.name+'('+f.cal+'kcal)').join('; ')||'none yet'}
 Last check-in: Mood ${lastCI.mood||'?'} | Notes: ${lastCI.notes||'none'}
 
-Keep responses 3-6 sentences unless detail is specifically requested. For medical questions, refer to a doctor. Be honest, not just positive.`;
+Keep responses 3-6 sentences unless detail is requested. Be honest, not just positive.`;
 }
 
-function setupChat(){
-  CHAT.length=0;const msgs=document.getElementById('chat-msgs');if(!msgs)return;msgs.innerHTML='';
-  const sp=getActiveSplit();const today=sp.days[APP.todayIdx%sp.days.length];
-  const u=APP.user;const b=u.body||{};
-  const wLog=sg('wt_log_'+u.email)||[];const curW=wLog.length?wLog[wLog.length-1].v+' '+(b.weightUnit||'lbs'):'not logged yet';
-  const todayFoods=sg('food_'+u.email+'_'+new Date().toDateString())||[];
-  const totalCal=todayFoods.reduce((a,f)=>a+(f.cal||0),0);
-  let welcome=u.name.split(' ')[0]+', ';
-  if(today.tag==='rest')welcome+='rest day today. Recovery drives growth \u2014 prioritize sleep and nutrition. You\'re at '+curW+' and have logged '+totalCal+' kcal. What can I help with?';
-  else welcome+='today is '+today.name+' \u2014 '+today.ex.length+' exercises on the program. Current weight: '+curW+'. '+totalCal+' kcal logged so far. What do you need?';
-  addMsg('ai',welcome);
+function setupChat() {
+  CHAT.length = 0; const msgs = document.getElementById('chat-msgs'); if (!msgs) return; msgs.innerHTML = '';
+  const sp = getActiveSplit(); const today = sp.days[APP.todayIdx % sp.days.length];
+  const u = APP.user; const b = u.body || {};
+  const wLog = sg('wt_log_' + u.email) || []; const curW = wLog.length ? wLog[wLog.length-1].v + ' ' + (b.weightUnit||'lbs') : 'not logged yet';
+  const todayFoods = sg('food_' + u.email + '_' + new Date().toDateString()) || [];
+  const totalCal = todayFoods.reduce((a, f) => a + (f.cal||0), 0);
+  let welcome = u.name.split(' ')[0] + ', ';
+  if (today.tag === 'rest') welcome += 'rest day today. Recovery is where you grow — prioritize sleep and nutrition. You\'re at ' + curW + ' and have logged ' + totalCal + ' kcal. What do you need?';
+  else welcome += 'today is ' + today.name + ' — ' + today.ex.length + ' exercises on the program. Current weight: ' + curW + '. ' + totalCal + ' kcal logged so far. What can I help with?';
+  addMsg('ai', welcome);
 }
-function ctxP(p){const msgs=document.getElementById('chat-msgs');if(!msgs||msgs.children.length===0)setupChat();document.getElementById('chat-in').value=p;sendMsg();}
-function addMsg(role,text){
-  const msgs=document.getElementById('chat-msgs');if(!msgs)return;
-  const w=document.createElement('div');
-  if(role==='ai')w.innerHTML='<div class="ai-nm">KITOFIT AI \u2014 GEMINI 2.0</div><div class="cb ai">'+text.replace(/\n/g,'<br>')+'</div>';
-  else w.innerHTML='<div class="cb user">'+escH(text)+'</div>';
-  msgs.appendChild(w);msgs.scrollTop=msgs.scrollHeight;
+
+function ctxP(p) { const msgs = document.getElementById('chat-msgs'); if (!msgs || msgs.children.length === 0) setupChat(); document.getElementById('chat-in').value = p; sendMsg(); }
+
+function addMsg(role, text) {
+  const msgs = document.getElementById('chat-msgs'); if (!msgs) return;
+  const w = document.createElement('div');
+  if (role === 'ai') w.innerHTML = '<div class="ai-nm">KITOFIT AI — GEMINI 2.0</div><div class="cb ai">' + text.replace(/\n/g, '<br>') + '</div>';
+  else w.innerHTML = '<div class="cb user">' + escH(text) + '</div>';
+  msgs.appendChild(w); msgs.scrollTop = msgs.scrollHeight;
 }
-async function sendMsg(){
-  const inp=document.getElementById('chat-in');const text=inp.value.trim();if(!text)return;
-  inp.value='';inp.style.height='auto';CHAT.push({role:'user',parts:[{text}]});addMsg('user',text);
-  const msgs=document.getElementById('chat-msgs');
-  const tw=document.createElement('div');tw.innerHTML='<div class="ai-nm">KITOFIT AI</div><div class="cb ai"><span class="tdot"></span><span class="tdot"></span><span class="tdot"></span></div>';
-  msgs.appendChild(tw);msgs.scrollTop=msgs.scrollHeight;
-  try{
-    const ctx=buildCtx();
-    const payload=[{role:'user',parts:[{text:'SYSTEM:\n'+ctx+'\n\nAcknowledge with "Ready."'}]},{role:'model',parts:[{text:'Ready.'}]},...CHAT];
-    const res=await fetch(GURL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:payload,generationConfig:{maxOutputTokens:700,temperature:0.82}})});
-    const data=await res.json();tw.remove();
-    const reply=data.candidates?.[0]?.content?.parts?.[0]?.text||'I had trouble connecting. Try again.';
-    CHAT.push({role:'model',parts:[{text:reply}]});addMsg('ai',reply);
-  }catch(e){tw.remove();addMsg('ai','Network error. Check your connection.');}
+
+async function sendMsg() {
+  const inp = document.getElementById('chat-in');
+  const text = inp.value.trim(); if (!text) return;
+  inp.value = ''; inp.style.height = 'auto';
+  CHAT.push({ role: 'user', parts: [{ text }] });
+  addMsg('user', text);
+  const msgs = document.getElementById('chat-msgs');
+  const tw = document.createElement('div');
+  tw.innerHTML = '<div class="ai-nm">KITOFIT AI</div><div class="cb ai"><span class="tdot"></span><span class="tdot"></span><span class="tdot"></span></div>';
+  msgs.appendChild(tw); msgs.scrollTop = msgs.scrollHeight;
+  try {
+    const ctx = buildCtx();
+    // System context injected as first user/model exchange
+    const payload = {
+      contents: [
+        { role: 'user', parts: [{ text: 'SYSTEM CONTEXT:\n' + ctx + '\n\nAcknowledge you are ready.' }] },
+        { role: 'model', parts: [{ text: 'Ready. I have your full profile loaded.' }] },
+        ...CHAT
+      ],
+      generationConfig: { maxOutputTokens: 800, temperature: 0.75 }
+    };
+    const data = await callGemini(payload);
+    tw.remove();
+    const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || 'Sorry, I had trouble responding. Please try again.';
+    CHAT.push({ role: 'model', parts: [{ text: reply }] });
+    addMsg('ai', reply);
+  } catch(err) {
+    tw.remove();
+    console.error('Coach error:', err);
+    addMsg('ai', 'Network error — check your connection and try again. (' + (err.message || 'Unknown error') + ')');
+  }
 }
-const autoR=el=>{el.style.height='auto';el.style.height=Math.min(el.scrollHeight,100)+'px'};
+
+const autoR = el => { el.style.height = 'auto'; el.style.height = Math.min(el.scrollHeight, 100) + 'px'; };
 
 // ════════════════════════════════════════════════════════
 // NAVIGATION
 // ════════════════════════════════════════════════════════
-function goTab(t){
-  document.querySelectorAll('.tab').forEach(p=>p.classList.remove('on'));
-  document.querySelectorAll('.ni').forEach(n=>{n.classList.remove('on');n.removeAttribute('aria-current')});
-  document.getElementById('tab-'+t).classList.add('on');
-  const order=['today','schedule','nutrition','coach','profile'];
-  const idx=order.indexOf(t);
-  if(idx>=0){document.querySelectorAll('.ni')[idx].classList.add('on');document.querySelectorAll('.ni')[idx].setAttribute('aria-current','page');}
-  document.getElementById('s-app').scrollTo(0,0);
-  if(t==='coach'&&(!document.getElementById('chat-msgs').children.length))setupChat();
-  if(t==='nutrition'){renderNutrition();renderPRs();}
-  if(t==='profile')renderProfile();
-  if(t==='today'){renderHeatStrip();renderWater();}
+function goTab(t) {
+  document.querySelectorAll('.tab').forEach(p => p.classList.remove('on'));
+  document.querySelectorAll('.ni').forEach(n => { n.classList.remove('on'); n.removeAttribute('aria-current'); });
+  document.getElementById('tab-' + t).classList.add('on');
+  const order = ['today','schedule','nutrition','coach','profile'];
+  const idx = order.indexOf(t);
+  if (idx >= 0) { document.querySelectorAll('.ni')[idx].classList.add('on'); document.querySelectorAll('.ni')[idx].setAttribute('aria-current', 'page'); }
+  document.getElementById('s-app').scrollTo(0, 0);
+  if (t === 'coach' && !document.getElementById('chat-msgs').children.length) setupChat();
+  if (t === 'nutrition') { renderNutrition(); renderPRs(); }
+  if (t === 'profile') renderProfile();
+  if (t === 'today') { renderHeatStrip(); }
 }
 
 // ════════════════════════════════════════════════════════
 // MODAL
 // ════════════════════════════════════════════════════════
-function mkModal(html){
+function mkModal(html) {
   closeMod();
-  const ov=document.createElement('div');ov.className='mov';ov.id='mmod';ov.setAttribute('role','dialog');ov.setAttribute('aria-modal','true');
-  const sh=document.createElement('div');sh.className='msh';sh.innerHTML=html;
+  const ov = document.createElement('div'); ov.className = 'mov'; ov.id = 'mmod';
+  ov.setAttribute('role','dialog'); ov.setAttribute('aria-modal','true');
+  const sh = document.createElement('div'); sh.className = 'msh'; sh.innerHTML = html;
   ov.appendChild(sh);
-  ov.onclick=e=>{if(e.target===ov)closeMod()};
+  ov.onclick = e => { if (e.target === ov) closeMod(); };
   document.body.appendChild(ov);
-  // Focus first input
-  setTimeout(()=>{const fi=sh.querySelector('input,select,textarea');if(fi)fi.focus()},100);
+  setTimeout(() => { const fi = sh.querySelector('input,select,textarea'); if (fi) fi.focus(); }, 100);
 }
-const closeMod=()=>{const m=document.getElementById('mmod');if(m)m.remove()};
+const closeMod = () => { const m = document.getElementById('mmod'); if (m) m.remove(); };
 
 // ════════════════════════════════════════════════════════
 // BOOT
 // ════════════════════════════════════════════════════════
-window.addEventListener('DOMContentLoaded',()=>{
-  const user=getSess();
-  if(user){
-    if(user.onboardingDone===false){APP.user=user;showScr('onboard');obGo(1);}
+window.addEventListener('DOMContentLoaded', () => {
+  const user = getSess();
+  if (user) {
+    if (user.onboardingDone === false) { APP.user = user; showScr('onboard'); obGo(1); }
     else initApp(user);
   }
 });
 
-// Close modal on Escape
-document.addEventListener('keydown',e=>{if(e.key==='Escape')closeMod()});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeMod(); });
 </script>
 </body>
 </html>
