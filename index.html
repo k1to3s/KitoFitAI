@@ -382,25 +382,6 @@ input[type=time]{background:var(--bg3);border:1px solid var(--border2);border-ra
   </div>
 </div>
 
-<!-- CAMERA OVERLAY -->
-<div id="cam-overlay" style="display:none">
-  <div class="cam-topbar">
-    <div class="cam-title">SCAN FOOD</div>
-    <div class="cam-close" onclick="closeCam()"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 2L14 14M14 2L2 14" stroke-width="2" stroke-linecap="round"/></svg></div>
-  </div>
-  <div style="position:relative;flex:1;overflow:hidden">
-    <video id="cam-video" autoplay playsinline muted></video>
-    <canvas id="cam-canvas"></canvas>
-    <div class="cam-frame">
-      <div class="cam-frame-corner tl"></div><div class="cam-frame-corner tr"></div>
-      <div class="cam-frame-corner bl"></div><div class="cam-frame-corner br"></div>
-    </div>
-  </div>
-  <div class="cam-controls">
-    <div class="cam-hint">Point at food — AI identifies and estimates macros</div>
-    <button class="cam-snap" onclick="snapFood()">SNAP</button>
-  </div>
-</div>
 
 <!-- BARCODE OVERLAY -->
 <div id="scan-overlay" style="display:none">
